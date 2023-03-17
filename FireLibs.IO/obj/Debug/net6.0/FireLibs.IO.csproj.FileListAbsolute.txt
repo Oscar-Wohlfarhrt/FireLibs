@@ -1,0 +1,12 @@
+D:\Github\FireLibs\FireLibs.IO\bin\Debug\net6.0\FireLibs.IO.deps.json
+D:\Github\FireLibs\FireLibs.IO\bin\Debug\net6.0\FireLibs.IO.dll
+D:\Github\FireLibs\FireLibs.IO\bin\Debug\net6.0\FireLibs.IO.pdb
+D:\Github\FireLibs\FireLibs.IO\obj\Debug\net6.0\FireLibs.IO.csproj.AssemblyReference.cache
+D:\Github\FireLibs\FireLibs.IO\obj\Debug\net6.0\FireLibs.IO.GeneratedMSBuildEditorConfig.editorconfig
+D:\Github\FireLibs\FireLibs.IO\obj\Debug\net6.0\FireLibs.IO.AssemblyInfoInputs.cache
+D:\Github\FireLibs\FireLibs.IO\obj\Debug\net6.0\FireLibs.IO.AssemblyInfo.cs
+D:\Github\FireLibs\FireLibs.IO\obj\Debug\net6.0\FireLibs.IO.csproj.CoreCompileInputs.cache
+D:\Github\FireLibs\FireLibs.IO\obj\Debug\net6.0\FireLibs.IO.dll
+D:\Github\FireLibs\FireLibs.IO\obj\Debug\net6.0\refint\FireLibs.IO.dll
+D:\Github\FireLibs\FireLibs.IO\obj\Debug\net6.0\FireLibs.IO.pdb
+D:\Github\FireLibs\FireLibs.IO\obj\Debug\net6.0\ref\FireLibs.IO.dll

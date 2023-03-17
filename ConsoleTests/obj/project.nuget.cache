@@ -1,8 +1,8 @@
 {
   "version": 2,
-  "dgSpecHash": "xzgZ2jCqXeUkRUjFo6U77c6B0fNW59AyzYczqBfL33M7Jnc5amf+7vjoc0BinT/dHR486CCD/RwOAk9nglO7XA==",
+  "dgSpecHash": "B28IzeI+gYQQ23Vtlww68e7qY0ZD64LrstN2yiZyJANlgtjX0SZb6LdUwZQnWm/vjydt6jVPx3ccuZT5BhS8SQ==",
   "success": true,
-  "projectFilePath": "G:\\Projectos Visual\\FireLibs\\FireLibs.IO\\FireLibs.IO.csproj",
+  "projectFilePath": "G:\\Projectos Visual\\FireLibs\\ConsoleTests\\ConsoleTests.csproj",
   "expectedPackageFiles": [
     "C:\\Users\\Oscar\\.nuget\\packages\\runtime.linux-arm.runtime.native.system.io.ports\\7.0.0\\runtime.linux-arm.runtime.native.system.io.ports.7.0.0.nupkg.sha512",
     "C:\\Users\\Oscar\\.nuget\\packages\\runtime.linux-arm64.runtime.native.system.io.ports\\7.0.0\\runtime.linux-arm64.runtime.native.system.io.ports.7.0.0.nupkg.sha512",

@@ -1,6 +1,6 @@
 {
   "version": 2,
-  "dgSpecHash": "8VKGfk5Tp68oAkwzh4ghNm63kW/374DtSRip4b/jabl1TaVVs3/SMl7LyWCc2ifGoggBm2+eVwetkRWEkHXilQ==",
+  "dgSpecHash": "yTvhumVZ1OEFVXvptc2jf92LA9wq1MX4F4Qgro09uxoI2ju9wQmtKHqMBSNRqsrK/mUCeEvw+lySdNbbaMEUhQ==",
   "success": true,
   "projectFilePath": "G:\\Projectos Visual\\FireLibs\\ConsoleTests\\ConsoleTests.csproj",
   "expectedPackageFiles": [
@@ -12,7 +12,8 @@
     "C:\\Users\\Oscar\\.nuget\\packages\\runtime.osx-x64.runtime.native.system.io.ports\\7.0.0\\runtime.osx-x64.runtime.native.system.io.ports.7.0.0.nupkg.sha512",
     "C:\\Users\\Oscar\\.nuget\\packages\\system.codedom\\7.0.0\\system.codedom.7.0.0.nupkg.sha512",
     "C:\\Users\\Oscar\\.nuget\\packages\\system.io.ports\\7.0.0\\system.io.ports.7.0.0.nupkg.sha512",
-    "C:\\Users\\Oscar\\.nuget\\packages\\system.management\\7.0.0\\system.management.7.0.0.nupkg.sha512"
+    "C:\\Users\\Oscar\\.nuget\\packages\\system.management\\7.0.0\\system.management.7.0.0.nupkg.sha512",
+    "C:\\Users\\Oscar\\.nuget\\packages\\firelibs.io\\1.0.0\\firelibs.io.1.0.0.nupkg.sha512"
   ],
   "logs": []
 }

@@ -127,6 +127,16 @@
           }
         }
       },
+      "FireLibs/1.0.0": {
+        "type": "project",
+        "framework": ".NETCoreApp,Version=v6.0",
+        "compile": {
+          "bin/placeholder/FireLibs.dll": {}
+        },
+        "runtime": {
+          "bin/placeholder/FireLibs.dll": {}
+        }
+      },
       "FireLibs.IO/1.0.0": {
         "type": "project",
         "framework": ".NETCoreApp,Version=v6.0",
@@ -329,6 +339,11 @@
         "useSharedDesignerContext.txt"
       ]
     },
+    "FireLibs/1.0.0": {
+      "type": "project",
+      "path": "../FireLibs/FireLibs.csproj",
+      "msbuildProject": "../FireLibs/FireLibs.csproj"
+    },
     "FireLibs.IO/1.0.0": {
       "type": "project",
       "path": "../FireLibs.IO/FireLibs.IO.csproj",
@@ -337,6 +352,7 @@
   },
   "projectFileDependencyGroups": {
     "net6.0": [
+      "FireLibs >= 1.0.0",
       "FireLibs.IO >= 1.0.0"
     ]
   },
@@ -375,6 +391,9 @@
           "projectReferences": {
             "G:\\Projectos Visual\\FireLibs\\FireLibs.IO\\FireLibs.IO.csproj": {
               "projectPath": "G:\\Projectos Visual\\FireLibs\\FireLibs.IO\\FireLibs.IO.csproj"
+            },
+            "G:\\Projectos Visual\\FireLibs\\FireLibs\\FireLibs.csproj": {
+              "projectPath": "G:\\Projectos Visual\\FireLibs\\FireLibs\\FireLibs.csproj"
             }
           }
         }
@@ -404,7 +423,7 @@
             "privateAssets": "all"
           }
         },
-        "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\7.0.100\\RuntimeIdentifierGraph.json"
+        "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\7.0.202\\RuntimeIdentifierGraph.json"
       }
     }
   }

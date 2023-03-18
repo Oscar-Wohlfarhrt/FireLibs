@@ -9,6 +9,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\FireLibs.IO\FireLibs.IO.csproj" />
+    <ProjectReference Include="..\FireLibs\FireLibs.csproj" />
   </ItemGroup>
 
 </Project>

@@ -6,6 +6,21 @@
     <Nullable>enable</Nullable>
     <Platforms>AnyCPU;x64</Platforms>
     <BaseOutputPath></BaseOutputPath>
+    <AssemblyVersion>0.1.0</AssemblyVersion>
+    <FileVersion>$(AssemblyVersion)</FileVersion>
+    <Version>$(AssemblyVersion)-alpha</Version>
+    <GenerateDocumentationFile>True</GenerateDocumentationFile>
+    <PackageLicenseExpression>MIT</PackageLicenseExpression>
+    <PackageRequireLicenseAcceptance>False</PackageRequireLicenseAcceptance>
+    <GeneratePackageOnBuild>True</GeneratePackageOnBuild>
+    <Description>An utility IO library.</Description>
+    <Title>$(AssemblyName)</Title>
+    <Authors>Oscar-Wohlfarhrt</Authors>
+    <Copyright>Copyright (c) 2023 Oscar Andrés Wohlfarhrt</Copyright>
+    <PackageProjectUrl>https://github.com/Oscar-Wohlfarhrt/FireLibs</PackageProjectUrl>
+    <PackageReadmeFile>Readme.md</PackageReadmeFile>
+    <RepositoryUrl>https://github.com/Oscar-Wohlfarhrt/FireLibs</RepositoryUrl>
+    <PackageReleaseNotes>First publication of the library</PackageReleaseNotes>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(OS)' == 'Windows_NT' ">
     <DefineConstants>_WINDOWS</DefineConstants>
@@ -14,6 +29,13 @@
   <ItemGroup>
     <PackageReference Include="System.IO.Ports" Version="7.0.0" />
     <PackageReference Include="System.Management" Version="7.0.0" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Update="Readme.md">
+      <Pack>True</Pack>
+      <PackagePath>\</PackagePath>
+    </None>
   </ItemGroup>
 
 </Project>

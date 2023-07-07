@@ -1,0 +1,6 @@
+G:\Projectos Visual\FireLibs\FireLibs.IO\publish\0.1.0\FireLibs.IO.dll
+G:\Projectos Visual\FireLibs\FireLibs.IO\publish\0.1.0\FireLibs.IO.deps.json
+G:\Projectos Visual\FireLibs\FireLibs.IO\publish\0.1.0\FireLibs.IO.pdb
+G:\Projectos Visual\FireLibs\FireLibs.IO\publish\0.1.0\System.CodeDom.dll
+G:\Projectos Visual\FireLibs\FireLibs.IO\publish\0.1.0\System.IO.Ports.dll
+G:\Projectos Visual\FireLibs\FireLibs.IO\publish\0.1.0\System.Management.dll

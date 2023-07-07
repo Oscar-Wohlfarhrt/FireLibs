@@ -1,0 +1,12 @@
+G:\Projectos Visual\FireLibs\FireLibs.IO\bin\Release\net6.0\win-x64\FireLibs.IO.deps.json
+G:\Projectos Visual\FireLibs\FireLibs.IO\bin\Release\net6.0\win-x64\FireLibs.IO.dll
+G:\Projectos Visual\FireLibs\FireLibs.IO\bin\Release\net6.0\win-x64\FireLibs.IO.pdb
+G:\Projectos Visual\FireLibs\FireLibs.IO\obj\Release\net6.0\win-x64\FireLibs.IO.csproj.AssemblyReference.cache
+G:\Projectos Visual\FireLibs\FireLibs.IO\obj\Release\net6.0\win-x64\FireLibs.IO.GeneratedMSBuildEditorConfig.editorconfig
+G:\Projectos Visual\FireLibs\FireLibs.IO\obj\Release\net6.0\win-x64\FireLibs.IO.AssemblyInfoInputs.cache
+G:\Projectos Visual\FireLibs\FireLibs.IO\obj\Release\net6.0\win-x64\FireLibs.IO.AssemblyInfo.cs
+G:\Projectos Visual\FireLibs\FireLibs.IO\obj\Release\net6.0\win-x64\FireLibs.IO.csproj.CoreCompileInputs.cache
+G:\Projectos Visual\FireLibs\FireLibs.IO\obj\Release\net6.0\win-x64\FireLibs.IO.dll
+G:\Projectos Visual\FireLibs\FireLibs.IO\obj\Release\net6.0\win-x64\refint\FireLibs.IO.dll
+G:\Projectos Visual\FireLibs\FireLibs.IO\obj\Release\net6.0\win-x64\FireLibs.IO.pdb
+G:\Projectos Visual\FireLibs\FireLibs.IO\obj\Release\net6.0\win-x64\ref\FireLibs.IO.dll

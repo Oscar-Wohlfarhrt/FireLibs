@@ -6,7 +6,7 @@
   "compilationOptions": {},
   "targets": {
     ".NETCoreApp,Version=v6.0": {
-      "FireLibs.IO/1.0.0": {
+      "FireLibs.IO/0.1.0-alpha": {
         "dependencies": {
           "System.IO.Ports": "7.0.0",
           "System.Management": "7.0.0"
@@ -124,7 +124,7 @@
     }
   },
   "libraries": {
-    "FireLibs.IO/1.0.0": {
+    "FireLibs.IO/0.1.0-alpha": {
       "type": "project",
       "serviceable": false,
       "sha512": ""

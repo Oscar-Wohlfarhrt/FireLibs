@@ -1,46 +1,56 @@
-﻿using Microsoft.Win32.SafeHandles;
-using System;
-using System.Collections.Generic;
-using System.Linq;
+﻿/*
+ * Modified by: Oscar-Wohlfarhrt - Github: https://github.com/Oscar-Wohlfarhrt
+ * Original from: jhebb and JoshWobbles - Github: https://github.com/InputMapper/Dualshock4
+*/
+
+using Microsoft.Win32.SafeHandles;
 using System.Runtime.InteropServices;
 using System.Security.Cryptography;
 using System.Text;
-using System.Threading.Tasks;
 using static FireLibs.IO.HID.NativeMethods;
 
 namespace FireLibs.IO.HID
 {
-    public class HidDevice
+    public class HidDevice : IDisposable
     {
-        #region DSHidDevice
+        private const bool defaultExclusiveMode = false;
 
-        DeviceInfo deviceInfo;
+        DSHidInfo deviceInfo;
         HidDeviceAttributes deviceAttributes;
         HidDeviceCapabilities deviceCapabilities;
         SafeFileHandle? safeFileHandle;
         string? serial;
-        private const bool defaultExclusiveMode = false;
 
         public bool IsExclusive { get; private set; }
         public bool IsOpen { get; private set; }
         public FileStream? FileStream { get; private set; }
-        public DeviceInfo Information { get { return deviceInfo; } }
+        public DSHidInfo Information { get { return deviceInfo; } }
         public HidDeviceAttributes Attributes { get { return deviceAttributes; } }
         public HidDeviceCapabilities Capabilities { get { return deviceCapabilities; } }
 
-#pragma warning disable CS8618
-        public HidDevice(string path, string description = "")
-        {
-            deviceInfo = new DeviceInfo(path, description);
-            LoadAtributes();
-        }
-        public HidDevice(DeviceInfo info)
+        public HidDevice(string path, string description = "") : this(new(path, description)) { }
+        public HidDevice(DSHidInfo info)
         {
             deviceInfo = info;
             LoadAtributes();
-        }
-#pragma warning restore CS8618
+            if (Information.ProductId <= 0)
+                Information.ProductId = Attributes.ProductId;
+            if (Information.VendorId <= 0)
+                Information.VendorId = Attributes.VendorId;
 
+            int trys = 3;
+            string? serial = null;
+            while (trys > 0 && (serial = ReadSerial())==null) ;
+            Information.Id = serial ?? info.Path;
+
+            if (serial == null)
+                serial = GenerateFakeMAC();
+
+            CancelIO();
+            CloseDevice();
+        }
+
+        #region Device Atributes
         private void LoadAtributes()
         {
             try
@@ -55,10 +65,11 @@ namespace FireLibs.IO.HID
             catch (Exception exception)
             {
                 System.Diagnostics.Trace.TraceError(exception.Message);
-                throw new Exception(string.Format("Error querying HID device '{0}'.", deviceInfo.Path), exception);
-
+                throw new Exception($"Error querying HID device '{deviceInfo.Path}'.", exception);
             }
         }
+
+        /* ------- Common ------- */
         private static HidDeviceAttributes GetDeviceAttributes(SafeFileHandle hidHandle)
         {
             var deviceAttributes = default(HIDD_ATTRIBUTES);
@@ -78,147 +89,8 @@ namespace FireLibs.IO.HID
             }
             return new HidDeviceCapabilities(capabilities);
         }
-        private SafeFileHandle OpenHandle(string devicePathName, bool isExclusive = false)
-        {
-            SafeFileHandle hidHandle;
-
-            try
-            {
-                if (isExclusive)
-                {
-                    hidHandle = CreateFile(devicePathName, GENERIC_READ | GENERIC_WRITE, 0, IntPtr.Zero, OpenExisting, 0, 0);
-                }
-                else
-                {
-                    hidHandle = CreateFile(devicePathName, GENERIC_READ | GENERIC_WRITE, FILE_SHARE_READ | FILE_SHARE_WRITE, IntPtr.Zero, OpenExisting, 0, 0);
-                }
-            }
-            catch (Exception)
-            {
-                throw;
-            }
-            return hidHandle;
-        }
-
-        public void OpenDevice(bool isExclusive)
-        {
-            if (IsOpen) return;
-            try
-            {
-                if (safeFileHandle == null || safeFileHandle.IsInvalid)
-                    safeFileHandle = OpenHandle(deviceInfo.Path, isExclusive);
-            }
-            catch (Exception exception)
-            {
-                IsOpen = false;
-                throw new Exception("Error opening HID device.", exception);
-            }
-
-            IsOpen = !safeFileHandle.IsInvalid;
-            IsExclusive = isExclusive;
-        }
-
-        public void CloseDevice()
-        {
-            if (!IsOpen) return;
-            closeFileStreamIO();
-
-            IsOpen = false;
-        }
-        private void closeFileStreamIO()
-        {
-            if (FileStream != null)
-                FileStream.Close();
-            FileStream = null;
-            if (safeFileHandle != null && !safeFileHandle.IsInvalid)
-            {
-                safeFileHandle.Close();
-            }
-            safeFileHandle = null;
-        }
-        public void Dispose()
-        {
-            CancelIO();
-            CloseDevice();
-        }
-        public void CancelIO()
-        {
-            if (IsOpen && safeFileHandle != null)
-                CancelIoEx(safeFileHandle.DangerousGetHandle(), IntPtr.Zero);
-        }
-        public bool ReadInputReport(byte[] data)
-        {
-            if (safeFileHandle == null)
-                safeFileHandle = OpenHandle(deviceInfo.Path, defaultExclusiveMode);
-            return HidD_GetInputReport(safeFileHandle, data, data.Length);
-        }
-        public ReadStatus ReadFile(byte[] inputBuffer)
-        {
-            if (safeFileHandle == null)
-                safeFileHandle = OpenHandle(deviceInfo.Path, defaultExclusiveMode);
-            try
-            {
-                if (NativeMethods.ReadFile(safeFileHandle.DangerousGetHandle(), inputBuffer, (uint)inputBuffer.Length, out uint bytesRead, IntPtr.Zero))
-                {
-                    return ReadStatus.Success;
-                }
-                else
-                {
-                    return ReadStatus.NoDataRead;
-                }
-            }
-            catch (Exception)
-            {
-                return ReadStatus.ReadError;
-            }
-        }
-        public ReadStatus WriteFile(byte[] inputBuffer)
-        {
-            if (safeFileHandle == null)
-                safeFileHandle = OpenHandle(deviceInfo.Path, defaultExclusiveMode);
-            try
-            {
-                if (NativeMethods.WriteFile(safeFileHandle.DangerousGetHandle(), inputBuffer, (uint)inputBuffer.Length, out uint bytesWrite, IntPtr.Zero))
-                {
-                    return ReadStatus.Success;
-                }
-                else
-                {
-                    return ReadStatus.NoDataRead;
-                }
-            }
-            catch (Exception)
-            {
-                return ReadStatus.ReadError;
-            }
-        }
-
-        public bool WriteOutputReportViaControl(byte[] outputBuffer)
-        {
-            try
-            {
-                if (safeFileHandle == null)
-                    safeFileHandle = OpenHandle(deviceInfo.Path, defaultExclusiveMode);
-                return HidD_SetOutputReport(safeFileHandle, outputBuffer, outputBuffer.Length);
-            }
-            catch
-            {
-                return false;
-            }
-        }
-        public bool GetFeature(byte[] data)
-        {
-            if (safeFileHandle == null)
-                safeFileHandle = OpenHandle(deviceInfo.Path, defaultExclusiveMode);
-            return HidD_GetFeature(safeFileHandle.DangerousGetHandle(), data, data.Length);
-        }
-        public bool SetFeature(byte[] data)
-        {
-            if (safeFileHandle == null)
-                safeFileHandle = OpenHandle(deviceInfo.Path, defaultExclusiveMode);
-            return HidD_SetFeature(safeFileHandle.DangerousGetHandle(), data, data.Length);
-        }
-        public string readSerial()
+        /* ------- Serial ------- */
+        public string? ReadSerial()
         {
             if (serial != null)
                 return serial;
@@ -248,20 +120,9 @@ namespace FireLibs.IO.HID
                             MACAddr[5], MACAddr[6], MACAddr[7], MACAddr[8],
                             MACAddr[9], MACAddr[10], MACAddr[11]);
                     }
-                    else
-                    {
-                        return serial = GenerateFakeMAC();
-                    }
                 }
             }
-            catch (Exception err)
-            {
-                if (err.GetType() == typeof(IndexOutOfRangeException))
-                    return serial = GenerateFakeMAC();
-            }
-
-            if (serial == null)
-                return "";
+            catch { }
 
             return serial;
         }
@@ -276,195 +137,157 @@ namespace FireLibs.IO.HID
             }
             return $"99:{FakeMAC[..14]}";
         }
-        #endregion
+        #endregion Device Atributes
 
-        public enum ReadStatus
+        #region Open Device
+        private SafeFileHandle OpenHandle(string devicePathName, bool isExclusive = false)
         {
-            Success = 0,
-            WaitTimedOut = 1,
-            WaitFail = 2,
-            NoDataRead = 3,
-            ReadError = 4,
-            NotConnected = 5
-        }
-        public class DeviceInfo
-        {
-            public string Path { get; private set; }
-            public string Description { get; private set; }
+            SafeFileHandle hidHandle;
 
-            public DeviceInfo(string path, string description)
+            try
             {
-                Path = path;
-                Description = description;
-            }
-        }
-        public class HidDeviceAttributes
-        {
-            internal HidDeviceAttributes(HIDD_ATTRIBUTES attributes)
-            {
-                VendorId = attributes.VendorID;
-                ProductId = attributes.ProductID;
-                Version = attributes.VersionNumber;
-
-                VendorHexId = "0x" + attributes.VendorID.ToString("X4");
-                ProductHexId = "0x" + attributes.ProductID.ToString("X4");
-            }
-
-            public int VendorId { get; private set; }
-            public int ProductId { get; private set; }
-            public int Version { get; private set; }
-            public string VendorHexId { get; set; }
-            public string ProductHexId { get; set; }
-        }
-        public class HidDeviceCapabilities
-        {
-            internal HidDeviceCapabilities(HIDP_CAPS capabilities)
-            {
-                Usage = capabilities.Usage;
-                UsagePage = capabilities.UsagePage;
-                InputReportByteLength = capabilities.InputReportByteLength;
-                OutputReportByteLength = capabilities.OutputReportByteLength;
-                FeatureReportByteLength = capabilities.FeatureReportByteLength;
-                Reserved = capabilities.Reserved;
-                NumberLinkCollectionNodes = capabilities.NumberLinkCollectionNodes;
-                NumberInputButtonCaps = capabilities.NumberInputButtonCaps;
-                NumberInputValueCaps = capabilities.NumberInputValueCaps;
-                NumberInputDataIndices = capabilities.NumberInputDataIndices;
-                NumberOutputButtonCaps = capabilities.NumberOutputButtonCaps;
-                NumberOutputValueCaps = capabilities.NumberOutputValueCaps;
-                NumberOutputDataIndices = capabilities.NumberOutputDataIndices;
-                NumberFeatureButtonCaps = capabilities.NumberFeatureButtonCaps;
-                NumberFeatureValueCaps = capabilities.NumberFeatureValueCaps;
-                NumberFeatureDataIndices = capabilities.NumberFeatureDataIndices;
-
-            }
-
-            public short Usage { get; private set; }
-            public short UsagePage { get; private set; }
-            public short InputReportByteLength { get; private set; }
-            public short OutputReportByteLength { get; private set; }
-            public short FeatureReportByteLength { get; private set; }
-            public short[] Reserved { get; private set; }
-            public short NumberLinkCollectionNodes { get; private set; }
-            public short NumberInputButtonCaps { get; private set; }
-            public short NumberInputValueCaps { get; private set; }
-            public short NumberInputDataIndices { get; private set; }
-            public short NumberOutputButtonCaps { get; private set; }
-            public short NumberOutputValueCaps { get; private set; }
-            public short NumberOutputDataIndices { get; private set; }
-            public short NumberFeatureButtonCaps { get; private set; }
-            public short NumberFeatureValueCaps { get; private set; }
-            public short NumberFeatureDataIndices { get; private set; }
-        }
-
-        #region Static Methods
-        private static Guid _hidClassGuid = Guid.Empty;
-        public static Guid HidClassGuid
-        {
-            get
-            {
-                if (_hidClassGuid.Equals(Guid.Empty)) HidD_GetHidGuid(ref _hidClassGuid);
-                return _hidClassGuid;
-            }
-        }
-
-        public static IEnumerable<HidDevice> Enumerate(int vendorId, params int[] productIds)
-        {
-            return EnumerateDevices().Select(x => new HidDevice(x))
-                .Where(x => x.Attributes.VendorId == vendorId && productIds.Contains(x.Attributes.ProductId));
-        }
-        public static IEnumerable<HidDevice> Enumerate(int vendorId)
-        {
-            return EnumerateDevices().Select(x => new HidDevice(x.Path, x.Description))
-                .Where(x => x.Attributes.VendorId == vendorId);
-        }
-
-        private static IEnumerable<DeviceInfo> EnumerateDevices()
-        {
-            List<DeviceInfo> devices = new List<DeviceInfo>();
-
-            Guid HidClass = HidClassGuid;
-
-            IntPtr infoSet = SetupDiGetClassDevs(ref HidClass, null, 0, DIGCF_PRESENT | DIGCF_DEVICEINTERFACE);
-
-            if (infoSet.ToInt64() != INVALID_HANDLE_VALUE)
-            {
-
-                SP_DEVINFO_DATA devInfoData = new();
-                devInfoData.cbSize = Marshal.SizeOf(devInfoData);
-
-                int deviceIndex = 0;
-                while (SetupDiEnumDeviceInfo(infoSet, deviceIndex++, ref devInfoData))
+                if (isExclusive)
                 {
-                    SP_DEVICE_INTERFACE_DATA interfaceData = new();
-                    interfaceData.cbSize = Marshal.SizeOf(interfaceData);
-
-                    int interfaceIndex = 0;
-
-                    while (SetupDiEnumDeviceInterfaces(infoSet, ref devInfoData, ref HidClass, interfaceIndex, ref interfaceData))
-                    {
-                        interfaceIndex++;
-
-                        string path = GetDevicePath(infoSet, ref interfaceData);
-                        string description = GetBusReportedDeviceDescription(infoSet, ref devInfoData) ?? GetDeviceDescription(infoSet, ref devInfoData);
-
-                        devices.Add(new DeviceInfo(path, description));
-                    }
+                    hidHandle = CreateFile(devicePathName, GENERIC_READ | GENERIC_WRITE, 0, IntPtr.Zero, OpenExisting, 0, 0);
                 }
-                SetupDiDestroyDeviceInfoList(infoSet);
+                else
+                {
+                    hidHandle = CreateFile(devicePathName, GENERIC_READ | GENERIC_WRITE, FILE_SHARE_READ | FILE_SHARE_WRITE, IntPtr.Zero, OpenExisting, 0, 0);
+                }
             }
-            return devices;
-        }
-
-        private static string GetDevicePath(IntPtr info, ref SP_DEVICE_INTERFACE_DATA interfaceData)
-        {
-            int bufferSize = 0;
-            SP_DEVICE_INTERFACE_DETAIL_DATA detailInterfaceData = new SP_DEVICE_INTERFACE_DETAIL_DATA();
-            detailInterfaceData.cbSize = IntPtr.Size == 4 ? 4 + Marshal.SystemDefaultCharSize : 8;
-
-            SetupDiGetDeviceInterfaceDetailBuffer(info, ref interfaceData, IntPtr.Zero, 0, ref bufferSize, IntPtr.Zero);
-            if (SetupDiGetDeviceInterfaceDetail(info, ref interfaceData, ref detailInterfaceData, bufferSize, ref bufferSize, IntPtr.Zero))
-                return detailInterfaceData.DevicePath;
-
-            return "";
-        }
-
-        private static string? GetBusReportedDeviceDescription(IntPtr info, ref SP_DEVINFO_DATA devInfoData)
-        {
-            if (Environment.OSVersion.Version.Major > 5)
+            catch (Exception)
             {
-                byte[] buffer = new byte[1024];
-                ulong type = 0;
-                int requiredSize = 0;
-
-                if (SetupDiGetDeviceProperty(info, ref devInfoData, ref DEVPKEY_Device_BusReportedDeviceDesc, ref type, buffer, 1024, ref requiredSize, 0))
-                    return ToUnicodeString(buffer);
+                throw;
+            }
+            return hidHandle;
+        }
+        public void OpenDevice(bool isExclusive)
+        {
+            if (IsOpen) return;
+            try
+            {
+                if (safeFileHandle == null || safeFileHandle.IsInvalid)
+                    safeFileHandle = OpenHandle(deviceInfo.Path, isExclusive);
+            }
+            catch (Exception exception)
+            {
+                IsOpen = false;
+                throw new Exception("Error opening HID device.", exception);
             }
 
-            return null;
+            IsOpen = !safeFileHandle.IsInvalid;
+            IsExclusive = isExclusive;
         }
-        private static string GetDeviceDescription(IntPtr info, ref SP_DEVINFO_DATA devInfoData)
+        #endregion Open Device
+
+        #region Close Device
+        public void CloseDevice()
         {
-            byte[] buffer = new byte[1024];
-            int type = 0;
-            int requiredSize = 0;
+            if (!IsOpen) return;
+            closeFileStreamIO();
 
-            SetupDiGetDeviceRegistryProperty(info, ref devInfoData, SPDRP_DEVICEDESC, ref type, buffer, 1024, ref requiredSize);
-
-            return ToUTF8String(buffer);
+            IsOpen = false;
         }
-
-        #endregion
-        private static string ToUTF8String(byte[] buffer)
+        private void closeFileStreamIO()
         {
-            var value = Encoding.UTF8.GetString(buffer);
-            return value.Remove(value.IndexOf((char)0));
+            if (FileStream != null)
+                FileStream.Close();
+            FileStream = null;
+            if (safeFileHandle != null && !safeFileHandle.IsInvalid)
+            {
+                safeFileHandle.Close();
+            }
+            safeFileHandle = null;
+        }
+        public void Dispose()
+        {
+            CancelIO();
+            CloseDevice();
+        }
+        public void CancelIO()
+        {
+            if (IsOpen && safeFileHandle != null)
+                CancelIoEx(safeFileHandle.DangerousGetHandle(), IntPtr.Zero);
+        }
+        #endregion Close Device
+
+        #region I/O Operations
+        /* ------- Read ------- */
+        public bool ReadInputReport(byte[] data)
+        {
+            if (safeFileHandle == null)
+                safeFileHandle = OpenHandle(deviceInfo.Path, defaultExclusiveMode);
+            return HidD_GetInputReport(safeFileHandle, data, data.Length);
+        }
+        public ReadStatus ReadFile(byte[] inputBuffer)
+        {
+            if (safeFileHandle == null)
+                safeFileHandle = OpenHandle(deviceInfo.Path, defaultExclusiveMode);
+            try
+            {
+                if (NativeMethods.ReadFile(safeFileHandle.DangerousGetHandle(), inputBuffer, (uint)inputBuffer.Length, out uint bytesRead, IntPtr.Zero))
+                {
+                    return ReadStatus.Success;
+                }
+                else
+                {
+                    return ReadStatus.NoDataRead;
+                }
+            }
+            catch (Exception)
+            {
+                return ReadStatus.ReadError;
+            }
         }
 
-        private static string ToUnicodeString(byte[] buffer)
+        /* ------- Write ------- */
+        public ReadStatus WriteFile(byte[] inputBuffer)
         {
-            var value = Encoding.Unicode.GetString(buffer);
-            return value.Remove(value.IndexOf((char)0));
+            if (safeFileHandle == null)
+                safeFileHandle = OpenHandle(deviceInfo.Path, defaultExclusiveMode);
+            try
+            {
+                if (NativeMethods.WriteFile(safeFileHandle.DangerousGetHandle(), inputBuffer, (uint)inputBuffer.Length, out uint bytesWrite, IntPtr.Zero))
+                {
+                    return ReadStatus.Success;
+                }
+                else
+                {
+                    return ReadStatus.NoDataRead;
+                }
+            }
+            catch (Exception)
+            {
+                return ReadStatus.ReadError;
+            }
         }
+        public bool WriteOutputReportViaControl(byte[] outputBuffer)
+        {
+            try
+            {
+                if (safeFileHandle == null)
+                    safeFileHandle = OpenHandle(deviceInfo.Path, defaultExclusiveMode);
+                return HidD_SetOutputReport(safeFileHandle, outputBuffer, outputBuffer.Length);
+            }
+            catch
+            {
+                return false;
+            }
+        }
+
+        /* ------- Feature ------- */
+        public bool GetFeature(byte[] data)
+        {
+            if (safeFileHandle == null)
+                safeFileHandle = OpenHandle(deviceInfo.Path, defaultExclusiveMode);
+            return HidD_GetFeature(safeFileHandle.DangerousGetHandle(), data, data.Length);
+        }
+        public bool SetFeature(byte[] data)
+        {
+            if (safeFileHandle == null)
+                safeFileHandle = OpenHandle(deviceInfo.Path, defaultExclusiveMode);
+            return HidD_SetFeature(safeFileHandle.DangerousGetHandle(), data, data.Length);
+        }
+        #endregion I/O Operations
     }
 }

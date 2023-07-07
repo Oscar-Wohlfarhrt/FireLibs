@@ -10,3 +10,5 @@ G:\Projectos Visual\FireLibs\FireLibs.IO\obj\Release\net6.0\FireLibs.IO.dll
 G:\Projectos Visual\FireLibs\FireLibs.IO\obj\Release\net6.0\refint\FireLibs.IO.dll
 G:\Projectos Visual\FireLibs\FireLibs.IO\obj\Release\net6.0\FireLibs.IO.pdb
 G:\Projectos Visual\FireLibs\FireLibs.IO\obj\Release\net6.0\ref\FireLibs.IO.dll
+G:\Projectos Visual\FireLibs\FireLibs.IO\bin\Release\net6.0\FireLibs.IO.xml
+G:\Projectos Visual\FireLibs\FireLibs.IO\obj\Release\net6.0\FireLibs.IO.xml

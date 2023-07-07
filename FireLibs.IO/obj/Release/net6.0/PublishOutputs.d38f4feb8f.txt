@@ -1,0 +1,15 @@
+G:\Projectos Visual\FireLibs\FireLibs.IO\bin\Release\net6.0\publish\FireLibs.IO.dll
+G:\Projectos Visual\FireLibs\FireLibs.IO\bin\Release\net6.0\publish\FireLibs.IO.deps.json
+G:\Projectos Visual\FireLibs\FireLibs.IO\bin\Release\net6.0\publish\FireLibs.IO.pdb
+G:\Projectos Visual\FireLibs\FireLibs.IO\bin\Release\net6.0\publish\System.CodeDom.dll
+G:\Projectos Visual\FireLibs\FireLibs.IO\bin\Release\net6.0\publish\System.IO.Ports.dll
+G:\Projectos Visual\FireLibs\FireLibs.IO\bin\Release\net6.0\publish\System.Management.dll
+G:\Projectos Visual\FireLibs\FireLibs.IO\bin\Release\net6.0\publish\runtimes\linux-arm\native\libSystem.IO.Ports.Native.so
+G:\Projectos Visual\FireLibs\FireLibs.IO\bin\Release\net6.0\publish\runtimes\linux-arm64\native\libSystem.IO.Ports.Native.so
+G:\Projectos Visual\FireLibs\FireLibs.IO\bin\Release\net6.0\publish\runtimes\linux-x64\native\libSystem.IO.Ports.Native.so
+G:\Projectos Visual\FireLibs\FireLibs.IO\bin\Release\net6.0\publish\runtimes\osx-arm64\native\libSystem.IO.Ports.Native.dylib
+G:\Projectos Visual\FireLibs\FireLibs.IO\bin\Release\net6.0\publish\runtimes\osx-x64\native\libSystem.IO.Ports.Native.dylib
+G:\Projectos Visual\FireLibs\FireLibs.IO\bin\Release\net6.0\publish\runtimes\unix\lib\net6.0\System.IO.Ports.dll
+G:\Projectos Visual\FireLibs\FireLibs.IO\bin\Release\net6.0\publish\runtimes\win\lib\net6.0\System.IO.Ports.dll
+G:\Projectos Visual\FireLibs\FireLibs.IO\bin\Release\net6.0\publish\runtimes\win\lib\net6.0\System.Management.dll
+G:\Projectos Visual\FireLibs\FireLibs.IO\bin\Release\net6.0\publish\FireLibs.IO.xml

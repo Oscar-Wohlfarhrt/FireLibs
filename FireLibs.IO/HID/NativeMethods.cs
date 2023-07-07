@@ -1,4 +1,9 @@
-﻿using Microsoft.Win32.SafeHandles;
+﻿/*
+ * Modified by: Oscar-Wohlfarhrt - Github: https://github.com/Oscar-Wohlfarhrt
+ * Original from: jhebb and JoshWobbles - Github: https://github.com/InputMapper/Dualshock4
+*/
+
+using Microsoft.Win32.SafeHandles;
 using System.Runtime.InteropServices;
 
 namespace FireLibs.IO.HID

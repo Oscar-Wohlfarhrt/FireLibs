@@ -11,16 +11,13 @@
 using System;
 using System.Reflection;
 
-[assembly: System.Reflection.AssemblyCompanyAttribute("Oscar-Wohlfarhrt")]
+[assembly: System.Reflection.AssemblyCompanyAttribute("FireLibs.IO")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Release")]
-[assembly: System.Reflection.AssemblyCopyrightAttribute("Copyright (c) 2023 Oscar Andrés Wohlfarhrt")]
-[assembly: System.Reflection.AssemblyDescriptionAttribute("An utility IO library.")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("0.1.0")]
 [assembly: System.Reflection.AssemblyInformationalVersionAttribute("0.1.0-alpha")]
 [assembly: System.Reflection.AssemblyProductAttribute("FireLibs.IO")]
 [assembly: System.Reflection.AssemblyTitleAttribute("FireLibs.IO")]
 [assembly: System.Reflection.AssemblyVersionAttribute("0.1.0")]
-[assembly: System.Reflection.AssemblyMetadataAttribute("RepositoryUrl", "https://github.com/Oscar-Wohlfarhrt/FireLibs")]
 
 // Generado por la clase WriteCodeFragment de MSBuild.
 

@@ -174,6 +174,41 @@ namespace FireLibs.IO.COMPorts.Win
             }
         }
         /// <summary>
+        /// Clear the recive buffer of the port
+        /// </summary>
+        /// <returns>True if the operation was successful</returns>
+        public bool FlushRXBuffer()
+        {
+            if (IsConnected && port != null)
+                return PurgeComm(port.DangerousGetHandle(),PurgeEnum.PURGE_RXCLEAR);
+            
+            return false;
+        }
+        /// <summary>
+        /// Clear the transmit buffer of the port
+        /// </summary>
+        /// <returns>True if the operation was successful</returns>
+        public bool FlushTXBuffer()
+        {
+            if (IsConnected && port != null)
+                return PurgeComm(port.DangerousGetHandle(), PurgeEnum.PURGE_TXCLEAR);
+
+            return false;
+        }
+        /// <summary>
+        /// Cancel transmit and recive current operations of the port
+        /// </summary>
+        /// <param name="rx">If is true cancel revice operations</param>
+        /// <param name="tx">If is true cancel transmit operations</param>
+        /// <returns>True if the operation was successful</returns>
+        public bool CancelCurrentIO(bool rx = true, bool tx = true)
+        {
+            if (IsConnected && port != null)
+                return PurgeComm(port.DangerousGetHandle(), (tx?PurgeEnum.PURGE_TXABORT:0) | (rx?PurgeEnum.PURGE_RXABORT:0));
+
+            return false;
+        }
+        /// <summary>
         /// Write a byte buffer to the port.
         /// </summary>
         /// <param name="buffer">Byte array to be written into the port</param>

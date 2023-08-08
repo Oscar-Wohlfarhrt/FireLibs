@@ -18,7 +18,7 @@ namespace FireLibs.IO.COMPorts
 #if _WINDOWS
         /// <summary>
         /// A replacement for .NET 'GetPortNames' function only Windows. Fixes the duplicate port entries of the 'GetPortNames' function.
-        /// Uses WMI querries to get port name and device name as a structure for SerialPort classes provided in this library.
+        /// Uses WMI queries to get port name and device name as a structure for SerialPort classes provided in this library.
         /// </summary>
         /// <returns>A SerialDeviceInfo array with the port and device names</returns>
         public static SerialDeviceInfo[] GetSerialDevices()

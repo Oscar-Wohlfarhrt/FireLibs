@@ -3,13 +3,16 @@
  * Original from: jhebb and JoshWobbles - Github: https://github.com/InputMapper/Dualshock4
 */
 
+using FireLibs.IO.COMPorts.Win;
 using Microsoft.Win32.SafeHandles;
+using System.Collections.Specialized;
 using System.Runtime.InteropServices;
 
-namespace FireLibs.IO.HID
+namespace FireLibs.IO
 {
     internal static class NativeMethods
     {
+        #region Kernel32
         internal const int FILE_FLAG_OVERLAPPED = 0x40000000;
         internal const short FILE_SHARE_READ = 0x1;
         internal const short FILE_SHARE_WRITE = 0x2;
@@ -69,6 +72,9 @@ namespace FireLibs.IO.HID
         [DllImport("kernel32.dll", SetLastError = true)]
         static internal extern bool ReadFile(IntPtr hFile, [Out] byte[] lpBuffer, uint nNumberOfBytesToRead, out uint lpNumberOfBytesRead, IntPtr lpOverlapped);
 
+        [DllImport("kernel32.dll", SetLastError = true)]
+        static internal extern bool ReadFile(IntPtr hFile, IntPtr lpBuffer, uint nNumberOfBytesToRead, out uint lpNumberOfBytesRead, IntPtr lpOverlapped);
+
         [DllImport("winusb.dll", SetLastError = true)]
         static internal extern bool WinUsb_ReadPipe(IntPtr InterfaceHandle, byte PipeID, byte[] Buffer, int BufferLength, ref int LengthTransferred, IntPtr Overlapped);
 
@@ -76,8 +82,12 @@ namespace FireLibs.IO.HID
         static internal extern uint WaitForSingleObject(IntPtr hHandle, int dwMilliseconds);
 
         [DllImport("kernel32.dll")]
-        static internal extern bool WriteFile(IntPtr hFile, byte[] lpBuffer, uint nNumberOfBytesToWrite, out uint lpNumberOfBytesWritten, IntPtr lpOverlapped);//[In] ref NativeOverlapped
+        static internal extern bool WriteFile(IntPtr hFile, byte[] lpBuffer, uint nNumberOfBytesToWrite, out uint lpNumberOfBytesWritten, IntPtr lpOverlapped);
+        [DllImport("kernel32.dll")]
+        static internal extern bool WriteFile(IntPtr hFile, IntPtr lpBuffer, uint nNumberOfBytesToWrite, out uint lpNumberOfBytesWritten, IntPtr lpOverlapped);
+        #endregion Kernel32
 
+        #region SetupAPI
         internal const int DBT_DEVICEARRIVAL = 0x8000;
         internal const int DBT_DEVICEREMOVECOMPLETE = 0x8004;
         internal const int DBT_DEVTYP_DEVICEINTERFACE = 5;
@@ -170,7 +180,7 @@ namespace FireLibs.IO.HID
         internal struct SP_DEVICE_INTERFACE_DATA
         {
             internal int cbSize;
-            internal System.Guid InterfaceClassGuid;
+            internal Guid InterfaceClassGuid;
             internal int Flags;
             internal IntPtr Reserved;
         }
@@ -200,7 +210,7 @@ namespace FireLibs.IO.HID
         }
 
         internal static DEVPROPKEY DEVPKEY_Device_BusReportedDeviceDesc =
-            new DEVPROPKEY { fmtid = new Guid(0x540b947e, 0x8b40, 0x45bc, 0xa8, 0xa2, 0x6a, 0x0b, 0x89, 0x4c, 0xbd, 0xa2), pid = 4 };
+            new() { fmtid = new Guid(0x540b947e, 0x8b40, 0x45bc, 0xa8, 0xa2, 0x6a, 0x0b, 0x89, 0x4c, 0xbd, 0xa2), pid = 4 };
 
         [DllImport("setupapi.dll", EntryPoint = "SetupDiGetDeviceRegistryProperty")]
         public static extern bool SetupDiGetDeviceRegistryProperty(IntPtr deviceInfoSet, ref SP_DEVINFO_DATA deviceInfoData, int propertyVal, ref int propertyRegDataType, byte[] propertyBuffer, int propertyBufferSize, ref int requiredSize);
@@ -229,12 +239,15 @@ namespace FireLibs.IO.HID
         [DllImport("setupapi.dll", CharSet = CharSet.Auto)]
         static internal extern bool SetupDiGetDeviceInterfaceDetail(IntPtr deviceInfoSet, ref SP_DEVICE_INTERFACE_DATA deviceInterfaceData, ref SP_DEVICE_INTERFACE_DETAIL_DATA deviceInterfaceDetailData, int deviceInterfaceDetailDataSize, ref int requiredSize, IntPtr deviceInfoData);
 
+        #endregion SetupAPI
+
         [DllImport("user32.dll", CharSet = CharSet.Auto)]
         static internal extern IntPtr RegisterDeviceNotification(IntPtr hRecipient, IntPtr notificationFilter, int flags);
 
         [DllImport("user32.dll")]
         static internal extern bool UnregisterDeviceNotification(IntPtr handle);
 
+        #region HID
         internal const short HIDP_INPUT = 0;
         internal const short HIDP_OUTPUT = 1;
 
@@ -357,6 +370,206 @@ namespace FireLibs.IO.HID
 
         [DllImport("hid.dll")]
         static internal extern bool HidD_GetSerialNumberString(IntPtr HidDeviceObject, byte[] Buffer, uint BufferLength);
+        #endregion HID
 
+        #region COMM
+        [StructLayout(LayoutKind.Sequential)]
+        internal struct DCB
+        {
+            internal uint DCBLength;
+            internal BaudRates BaudRate;
+            private BitVector32 Flags;
+
+            private ushort wReserved;        // not currently used
+            internal ushort XonLim;           // transmit XON threshold
+            internal ushort XoffLim;          // transmit XOFF threshold             
+
+            internal byte ByteSize;
+            internal Parity Parity;
+            internal StopBits StopBits;
+
+            internal sbyte XonChar;          // Tx and Rx XON character
+            internal sbyte XoffChar;         // Tx and Rx XOFF character
+            internal sbyte ErrorChar;        // error replacement character
+            internal sbyte EofChar;          // end of input character
+            internal sbyte EvtChar;          // received event character
+            private ushort wReserved1;       // reserved; do not use     
+
+            private static readonly int fBinary;
+            private static readonly int fParity;
+            private static readonly int fOutxCtsFlow;
+            private static readonly int fOutxDsrFlow;
+            private static readonly BitVector32.Section fDtrControl;
+            private static readonly int fDsrSensitivity;
+            private static readonly int fTXContinueOnXoff;
+            private static readonly int fOutX;
+            private static readonly int fInX;
+            private static readonly int fErrorChar;
+            private static readonly int fNull;
+            private static readonly BitVector32.Section fRtsControl;
+            private static readonly int fAbortOnError;
+
+            static DCB()
+            {
+                // Create Boolean Mask
+                int previousMask;
+                fBinary = BitVector32.CreateMask();
+                fParity = BitVector32.CreateMask(fBinary);
+                fOutxCtsFlow = BitVector32.CreateMask(fParity);
+                fOutxDsrFlow = BitVector32.CreateMask(fOutxCtsFlow);
+                previousMask = BitVector32.CreateMask(fOutxDsrFlow);
+                previousMask = BitVector32.CreateMask(previousMask);
+                fDsrSensitivity = BitVector32.CreateMask(previousMask);
+                fTXContinueOnXoff = BitVector32.CreateMask(fDsrSensitivity);
+                fOutX = BitVector32.CreateMask(fTXContinueOnXoff);
+                fInX = BitVector32.CreateMask(fOutX);
+                fErrorChar = BitVector32.CreateMask(fInX);
+                fNull = BitVector32.CreateMask(fErrorChar);
+                previousMask = BitVector32.CreateMask(fNull);
+                previousMask = BitVector32.CreateMask(previousMask);
+                fAbortOnError = BitVector32.CreateMask(previousMask);
+
+                // Create section Mask
+                BitVector32.Section previousSection;
+                previousSection = BitVector32.CreateSection(1);
+                previousSection = BitVector32.CreateSection(1, previousSection);
+                previousSection = BitVector32.CreateSection(1, previousSection);
+                previousSection = BitVector32.CreateSection(1, previousSection);
+                fDtrControl = BitVector32.CreateSection(2, previousSection);
+                previousSection = BitVector32.CreateSection(1, fDtrControl);
+                previousSection = BitVector32.CreateSection(1, previousSection);
+                previousSection = BitVector32.CreateSection(1, previousSection);
+                previousSection = BitVector32.CreateSection(1, previousSection);
+                previousSection = BitVector32.CreateSection(1, previousSection);
+                previousSection = BitVector32.CreateSection(1, previousSection);
+                fRtsControl = BitVector32.CreateSection(3, previousSection);
+                previousSection = BitVector32.CreateSection(1, fRtsControl);
+            }
+
+            public bool Binary
+            {
+                get { return Flags[fBinary]; }
+                set { Flags[fBinary] = value; }
+            }
+
+            public bool CheckParity
+            {
+                get { return Flags[fParity]; }
+                set { Flags[fParity] = value; }
+            }
+
+            public bool OutxCtsFlow
+            {
+                get { return Flags[fOutxCtsFlow]; }
+                set { Flags[fOutxCtsFlow] = value; }
+            }
+
+            public bool OutxDsrFlow
+            {
+                get { return Flags[fOutxDsrFlow]; }
+                set { Flags[fOutxDsrFlow] = value; }
+            }
+
+            public DtrControl DtrControl
+            {
+                get { return (DtrControl)Flags[fDtrControl]; }
+                set { Flags[fDtrControl] = (int)value; }
+            }
+
+            public bool DsrSensitivity
+            {
+                get { return Flags[fDsrSensitivity]; }
+                set { Flags[fDsrSensitivity] = value; }
+            }
+
+            public bool TxContinueOnXoff
+            {
+                get { return Flags[fTXContinueOnXoff]; }
+                set { Flags[fTXContinueOnXoff] = value; }
+            }
+
+            public bool OutX
+            {
+                get { return Flags[fOutX]; }
+                set { Flags[fOutX] = value; }
+            }
+
+            public bool InX
+            {
+                get { return Flags[fInX]; }
+                set { Flags[fInX] = value; }
+            }
+
+            public bool ReplaceErrorChar
+            {
+                get { return Flags[fErrorChar]; }
+                set { Flags[fErrorChar] = value; }
+            }
+
+            public bool Null
+            {
+                get { return Flags[fNull]; }
+                set { Flags[fNull] = value; }
+            }
+
+            public RtsControl RtsControl
+            {
+                get { return (RtsControl)Flags[fRtsControl]; }
+                set { Flags[fRtsControl] = (int)value; }
+            }
+
+            public bool AbortOnError
+            {
+                get { return Flags[fAbortOnError]; }
+                set { Flags[fAbortOnError] = value; }
+            }
+        }
+        internal struct COMMTIMEOUTS
+        {
+            /// <summary>
+            /// Maximum time allowed to elapse between the arrival of two bytes on the communications line, in milliseconds. During a ReadFile operation, the time period begins when the first byte is received. If the interval between the arrival of any two bytes exceeds this amount, the ReadFile operation is completed and any buffered data is returned. A value of zero indicates that interval time-outs are not used.
+            /// A value of MAXDWORD, combined with zero values for both the ReadTotalTimeoutConstant and ReadTotalTimeoutMultiplier members, specifies that the read operation is to return immediately with the bytes that have already been received, even if no bytes have been received.
+            /// </summary>
+            public uint ReadIntervalTimeout;
+            /// <summary>
+            /// Multiplier used to calculate the total time-out period for read operations, in milliseconds. For each read operation, this value is multiplied by the requested number of bytes to be read.
+            /// </summary>
+            public uint ReadTotalTimeoutMultiplier;
+            /// <summary>
+            /// Constant used to calculate the total time-out period for read operations, in milliseconds. For each read operation, this value is added to the product of the ReadTotalTimeoutMultiplier member and the requested number of bytes.
+            /// A value of zero for both the ReadTotalTimeoutMultiplier and ReadTotalTimeoutConstant members indicates that total time-outs are not used for read operations.
+            /// </summary>
+            public uint ReadTotalTimeoutConstant;
+            /// <summary>
+            /// Multiplier used to calculate the total time-out period for write operations, in milliseconds. For each write operation, this value is multiplied by the number of bytes to be written.
+            /// </summary>
+            public uint WriteTotalTimeoutMultiplier;
+            /// <summary>
+            /// Constant used to calculate the total time-out period for write operations, in milliseconds. For each write operation, this value is added to the product of the WriteTotalTimeoutMultiplier member and the number of bytes to be written.
+            /// A value of zero for both the WriteTotalTimeoutMultiplier and WriteTotalTimeoutConstant members indicates that total time-outs are not used for write operations.
+            /// </summary>
+            public uint WriteTotalTimeoutConstant;
+        }
+
+        [DllImport("kernel32.dll")]
+        static internal extern bool GetCommState(IntPtr hFile, [In, Out] ref DCB lpDCB);
+        [DllImport("kernel32.dll", SetLastError = true)]
+        static internal extern bool GetCommTimeouts(IntPtr hFile, [In][Out] ref COMMTIMEOUTS lpCommTimeouts);
+        [DllImport("kernel32.dll")]
+        static internal extern bool SetCommState(IntPtr hFile, [In] ref DCB lpDCB);
+        [DllImport("kernel32.dll", SetLastError = true)]
+        static internal extern bool SetCommTimeouts(IntPtr hFile, [In] ref COMMTIMEOUTS lpCommTimeouts);
+
+        internal enum PurgeEnum : uint
+        {
+            PURGE_TXABORT = 0x0001,  // Kill the pending/current writes to the comm port.
+            PURGE_RXABORT = 0x0002,  // Kill the pending/current reads to the comm port.
+            PURGE_TXCLEAR = 0x0004,  // Kill the transmit queue if there.
+            PURGE_RXCLEAR = 0x0008  // Kill the typeahead buffer if there.
+        }
+
+        [DllImport("kernel32.dll")]
+        static internal extern bool PurgeComm(IntPtr hFile, PurgeEnum dwFlags);
+        #endregion COMM
     }
 }

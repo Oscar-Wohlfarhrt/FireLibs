@@ -7,29 +7,59 @@ using Microsoft.Win32.SafeHandles;
 using System.Runtime.InteropServices;
 using System.Security.Cryptography;
 using System.Text;
-using static FireLibs.IO.HID.NativeMethods;
+using static FireLibs.IO.NativeMethods;
 
 namespace FireLibs.IO.HID
 {
+    /// <summary>
+    /// A class for HidDevices. Only works on windows.
+    /// </summary>
     public class HidDevice : IDisposable
     {
         private const bool defaultExclusiveMode = false;
 
-        DSHidInfo deviceInfo;
-        HidDeviceAttributes deviceAttributes;
-        HidDeviceCapabilities deviceCapabilities;
-        SafeFileHandle? safeFileHandle;
-        string? serial;
+        private readonly HidInfo deviceInfo = null!;
+        private HidDeviceAttributes deviceAttributes = null!;
+        private HidDeviceCapabilities deviceCapabilities = null!;
+        private SafeFileHandle? safeFileHandle = null;
+        private string? serial = null;
 
+        /// <summary>
+        /// Gets if the Hid Device is opened on exclusive mode. If is in exclusive mode no other program can write to the device.
+        /// </summary>
         public bool IsExclusive { get; private set; }
+        /// <summary>
+        /// Gets if the Hid Device is Opened/Connected.
+        /// </summary>
         public bool IsOpen { get; private set; }
-        public FileStream? FileStream { get; private set; }
-        public DSHidInfo Information { get { return deviceInfo; } }
+        /// <summary>
+        /// Get the Hid Device information.
+        /// </summary>
+        public HidInfo Information { get { return deviceInfo; } }
+        /// <summary>
+        /// Get the Hid Device atributes.
+        /// </summary>
         public HidDeviceAttributes Attributes { get { return deviceAttributes; } }
+        /// <summary>
+        /// Get the Hid Device capabilities.
+        /// </summary>
         public HidDeviceCapabilities Capabilities { get { return deviceCapabilities; } }
-
+        /// <summary>
+        /// Gets the serial number of the device, if it has one, otherwise it returns a fake one generated using the path property.
+        /// If serial number is null anyway, it returns an empty string.
+        /// </summary>
+        public string Serial { get => serial ?? string.Empty; }
+        /// <summary>
+        /// HidDevice class constructor.
+        /// </summary>
+        /// <param name="path">The windows device path</param>
+        /// <param name="description">The friendly name of the device</param>
         public HidDevice(string path, string description = "") : this(new(path, description)) { }
-        public HidDevice(DSHidInfo info)
+        /// <summary>
+        /// HidDevice class constructor.
+        /// </summary>
+        /// <param name="info">HidInfo class containing the device information</param>
+        public HidDevice(HidInfo info)
         {
             deviceInfo = info;
             LoadAtributes();
@@ -39,12 +69,11 @@ namespace FireLibs.IO.HID
                 Information.VendorId = Attributes.VendorId;
 
             int trys = 3;
-            string? serial = null;
+            serial = null;
             while (trys > 0 && (serial = ReadSerial())==null) ;
             Information.Id = serial ?? info.Path;
 
-            if (serial == null)
-                serial = GenerateFakeMAC();
+            serial ??= GenerateFakeMAC();
 
             CancelIO();
             CloseDevice();
@@ -84,13 +113,13 @@ namespace FireLibs.IO.HID
 
             if (HidD_GetPreparsedData(hidHandle.DangerousGetHandle(), ref preparsedDataPointer))
             {
-                HidP_GetCaps(preparsedDataPointer, ref capabilities);
+                _ = HidP_GetCaps(preparsedDataPointer, ref capabilities);
                 HidD_FreePreparsedData(preparsedDataPointer);
             }
             return new HidDeviceCapabilities(capabilities);
         }
         /* ------- Serial ------- */
-        public string? ReadSerial()
+        private string? ReadSerial()
         {
             if (serial != null)
                 return serial;
@@ -140,7 +169,7 @@ namespace FireLibs.IO.HID
         #endregion Device Atributes
 
         #region Open Device
-        private SafeFileHandle OpenHandle(string devicePathName, bool isExclusive = false)
+        private static SafeFileHandle OpenHandle(string devicePathName, bool isExclusive = false)
         {
             SafeFileHandle hidHandle;
 
@@ -161,6 +190,11 @@ namespace FireLibs.IO.HID
             }
             return hidHandle;
         }
+        /// <summary>
+        /// Open/Connects the Hid Device.
+        /// </summary>
+        /// <param name="isExclusive">A tru/false value indicating if the device is opened in exclusive mode</param>
+        /// <exception cref="Exception">Thows an exeption if the device fails to open</exception>
         public void OpenDevice(bool isExclusive)
         {
             if (IsOpen) return;
@@ -181,29 +215,36 @@ namespace FireLibs.IO.HID
         #endregion Open Device
 
         #region Close Device
+        /// <summary>
+        /// Close/Disconnect the Hid Device.
+        /// </summary>
         public void CloseDevice()
         {
             if (!IsOpen) return;
-            closeFileStreamIO();
+            CloseFileStreamIO();
 
             IsOpen = false;
         }
-        private void closeFileStreamIO()
+        private void CloseFileStreamIO()
         {
-            if (FileStream != null)
-                FileStream.Close();
-            FileStream = null;
             if (safeFileHandle != null && !safeFileHandle.IsInvalid)
             {
                 safeFileHandle.Close();
             }
             safeFileHandle = null;
         }
+        /// <summary>
+        /// Dispose function for HidDevice class. Cancel the current transmisions and close the device.
+        /// </summary>
         public void Dispose()
         {
             CancelIO();
             CloseDevice();
+            GC.SuppressFinalize(this);
         }
+        /// <summary>
+        /// Cancel current Input/Output operations of the device.
+        /// </summary>
         public void CancelIO()
         {
             if (IsOpen && safeFileHandle != null)
@@ -213,60 +254,111 @@ namespace FireLibs.IO.HID
 
         #region I/O Operations
         /* ------- Read ------- */
+        /// <summary>
+        /// Reads the input report from the device
+        /// </summary>
+        /// <param name="data">A byte array to read the report. First byte is the report id.</param>
+        /// <returns>True if the read process is successful</returns>
         public bool ReadInputReport(byte[] data)
         {
-            if (safeFileHandle == null)
-                safeFileHandle = OpenHandle(deviceInfo.Path, defaultExclusiveMode);
+            safeFileHandle ??= OpenHandle(deviceInfo.Path, defaultExclusiveMode);
             return HidD_GetInputReport(safeFileHandle, data, data.Length);
         }
-        public ReadStatus ReadFile(byte[] inputBuffer)
+        /// <summary>
+        /// Reads directly from the Hid Device File/Input buffer using Windows FileApi
+        /// </summary>
+        /// <param name="inputBuffer">A byte array to read the file data</param>
+        /// <returns>A ReadWriteStatus enumeration</returns>
+        public ReadWriteStatus ReadFile(byte[] inputBuffer)
         {
-            if (safeFileHandle == null)
-                safeFileHandle = OpenHandle(deviceInfo.Path, defaultExclusiveMode);
+            safeFileHandle ??= OpenHandle(deviceInfo.Path, defaultExclusiveMode);
             try
             {
                 if (NativeMethods.ReadFile(safeFileHandle.DangerousGetHandle(), inputBuffer, (uint)inputBuffer.Length, out uint bytesRead, IntPtr.Zero))
                 {
-                    return ReadStatus.Success;
+                    return ReadWriteStatus.Success;
                 }
                 else
                 {
-                    return ReadStatus.NoDataRead;
+                    return ReadWriteStatus.NoData;
                 }
             }
             catch (Exception)
             {
-                return ReadStatus.ReadError;
+                return ReadWriteStatus.Error;
+            }
+        }
+        /// <summary>
+        /// Reads a structure directly from the Hid Device File/Input buffer using Windows FileApi.
+        /// </summary>
+        /// <typeparam name="T">Type of the structure to be read</typeparam>
+        /// <param name="buffer">The readed structure</param>
+        /// <returns>A ReadWriteStatus enumeration</returns>
+        public ReadWriteStatus ReadFile<T>(out T buffer) where T : struct
+        {
+            safeFileHandle ??= OpenHandle(deviceInfo.Path, defaultExclusiveMode);
+            IntPtr strPtr = Marshal.AllocHGlobal(Marshal.SizeOf<T>());
+            buffer = default;
+            try
+            {
+                if (NativeMethods.ReadFile(safeFileHandle.DangerousGetHandle(), strPtr, (uint)Marshal.SizeOf<T>(), out uint bytesRead, IntPtr.Zero))
+                {
+                    buffer = Marshal.PtrToStructure<T>(strPtr);
+                    Marshal.FreeHGlobal(strPtr);
+                    return ReadWriteStatus.Success;
+                }
+                else
+                {
+                    Marshal.FreeHGlobal(strPtr);
+                    return ReadWriteStatus.NoData;
+                }
+            }
+            catch (Exception)
+            {
+                Marshal.FreeHGlobal(strPtr);
+                return ReadWriteStatus.Error;
+            }
+            finally
+            {
+                Marshal.FreeHGlobal(strPtr);
             }
         }
 
         /* ------- Write ------- */
-        public ReadStatus WriteFile(byte[] inputBuffer)
+        /// <summary>
+        /// Writes directly to the Hid Device File/Output buffer using Windows FileApi
+        /// </summary>
+        /// <param name="outputBuffer">A byte array containing the data to be written</param>
+        /// <returns>A ReadWriteStatus enumeration</returns>
+        public ReadWriteStatus WriteFile(byte[] outputBuffer)
         {
-            if (safeFileHandle == null)
-                safeFileHandle = OpenHandle(deviceInfo.Path, defaultExclusiveMode);
+            safeFileHandle ??= OpenHandle(deviceInfo.Path, defaultExclusiveMode);
             try
             {
-                if (NativeMethods.WriteFile(safeFileHandle.DangerousGetHandle(), inputBuffer, (uint)inputBuffer.Length, out uint bytesWrite, IntPtr.Zero))
+                if (NativeMethods.WriteFile(safeFileHandle.DangerousGetHandle(), outputBuffer, (uint)outputBuffer.Length, out uint bytesWrite, IntPtr.Zero))
                 {
-                    return ReadStatus.Success;
+                    return ReadWriteStatus.Success;
                 }
                 else
                 {
-                    return ReadStatus.NoDataRead;
+                    return ReadWriteStatus.NoData;
                 }
             }
             catch (Exception)
             {
-                return ReadStatus.ReadError;
+                return ReadWriteStatus.Error;
             }
         }
-        public bool WriteOutputReportViaControl(byte[] outputBuffer)
+        /// <summary>
+        /// Writes an output report to the device.
+        /// </summary>
+        /// <param name="outputBuffer">A byte array containing the data to be written. First byte is the report id.</param>
+        /// <returns>True if the write process is successful</returns>
+        public bool WriteOutputReport(byte[] outputBuffer)
         {
             try
             {
-                if (safeFileHandle == null)
-                    safeFileHandle = OpenHandle(deviceInfo.Path, defaultExclusiveMode);
+                safeFileHandle ??= OpenHandle(deviceInfo.Path, defaultExclusiveMode);
                 return HidD_SetOutputReport(safeFileHandle, outputBuffer, outputBuffer.Length);
             }
             catch
@@ -274,18 +366,56 @@ namespace FireLibs.IO.HID
                 return false;
             }
         }
+        /// <summary>
+        /// Writes a structure directly to the Hid Device File/Output buffer using Windows FileApi.
+        /// </summary>
+        /// <typeparam name="T">Type of the structure to be written</typeparam>
+        /// <param name="buffer">The structure to be written</param>
+        /// <returns>A ReadWriteStatus enumeration</returns>
+        public ReadWriteStatus WriteFile<T>(T buffer) where T : struct
+        {
+            safeFileHandle ??= OpenHandle(deviceInfo.Path, defaultExclusiveMode);
+            IntPtr strPtr = Marshal.AllocHGlobal(Marshal.SizeOf<T>());
+            try
+            {
+                Marshal.StructureToPtr(buffer, strPtr, true);
+                if (NativeMethods.WriteFile(safeFileHandle.DangerousGetHandle(), strPtr, (uint)Marshal.SizeOf<T>(), out uint bytesWrite, IntPtr.Zero))
+                {
+                    Marshal.FreeHGlobal(strPtr);
+                    return ReadWriteStatus.Success;
+                }
+                else
+                {
+                    Marshal.FreeHGlobal(strPtr);
+                    return ReadWriteStatus.NoData;
+                }
+            }
+            catch (Exception)
+            {
+                Marshal.FreeHGlobal(strPtr);
+                return ReadWriteStatus.Error;
+            }
+        }
 
         /* ------- Feature ------- */
+        /// <summary>
+        /// Gets a feature report from the Hid Device
+        /// </summary>
+        /// <param name="data">A byte array containing the data to be readed. First byte is the report id.</param>
+        /// <returns>True if the read process is successful</returns>
         public bool GetFeature(byte[] data)
         {
-            if (safeFileHandle == null)
-                safeFileHandle = OpenHandle(deviceInfo.Path, defaultExclusiveMode);
+            safeFileHandle ??= OpenHandle(deviceInfo.Path, defaultExclusiveMode);
             return HidD_GetFeature(safeFileHandle.DangerousGetHandle(), data, data.Length);
         }
+        /// <summary>
+        /// Sets a feature report from the Hid Device
+        /// </summary>
+        /// <param name="data">A byte array containing the data to be written. First byte is the report id.</param>
+        /// <returns>True if the write process is successful</returns>
         public bool SetFeature(byte[] data)
         {
-            if (safeFileHandle == null)
-                safeFileHandle = OpenHandle(deviceInfo.Path, defaultExclusiveMode);
+            safeFileHandle ??= OpenHandle(deviceInfo.Path, defaultExclusiveMode);
             return HidD_SetFeature(safeFileHandle.DangerousGetHandle(), data, data.Length);
         }
         #endregion I/O Operations

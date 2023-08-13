@@ -103,17 +103,17 @@ namespace FireLibs.IO.COMPorts
             return true;
         }
         /// <summary>
-        /// Read a single byte from the recive buffer
+        /// Read a single byte from the receive buffer
         /// </summary>
         /// <returns>The readed byte value</returns>
         public int ReadByte() => port.ReadByte();
         /// <summary>
-        /// Reads all the bytes in the recive buffer as a string
+        /// Reads all the bytes in the receive buffer as a string
         /// </summary>
         /// <returns>A ASCII string of the bytes readed</returns>
         public string ReadExisting() => port.ReadExisting();
         /// <summary>
-        /// Reads a char array from the recived buffer.
+        /// Reads a char array from the received buffer.
         /// </summary>
         /// <param name="buffer">Buffer array to be readed</param>
         /// <param name="offset">Offset from the start of the array</param>
@@ -121,7 +121,7 @@ namespace FireLibs.IO.COMPorts
         /// <returns></returns>
         public int Read(char[] buffer, int offset, int count) => port.Read(buffer, offset, count);
         /// <summary>
-        /// Reads a byte array from the recived buffer.
+        /// Reads a byte array from the received buffer.
         /// </summary>
         /// <param name="buffer">Buffer array to be readed</param>
         /// <param name="offset">Offset from the start of the array</param>
@@ -129,7 +129,7 @@ namespace FireLibs.IO.COMPorts
         /// <returns></returns>
         public int Read(byte[] buffer, int offset, int count) => port.Read(buffer, offset, count);
         /// <summary>
-        /// Reads a byte array from the recived buffer if all the requested bytes are recived. If the requested bytes are not available in the ReadTimeout time, nothing is readed.
+        /// Reads a byte array from the received buffer if all the requested bytes are received. If the requested bytes are not available in the ReadTimeout time, nothing is readed.
         /// </summary>
         /// <param name="buffer">Buffer array to be readed</param>
         /// <param name="offset">Offset from the start of the array</param>

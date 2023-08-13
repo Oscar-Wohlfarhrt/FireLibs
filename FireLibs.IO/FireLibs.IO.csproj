@@ -6,7 +6,7 @@
     <Nullable>enable</Nullable>
     <Platforms>AnyCPU;x64</Platforms>
     <BaseOutputPath></BaseOutputPath>
-    <AssemblyVersion>0.2.0</AssemblyVersion>
+    <AssemblyVersion>0.2.1</AssemblyVersion>
     <FileVersion>$(AssemblyVersion)</FileVersion>
     <Version>$(AssemblyVersion)-alpha</Version>
     <GenerateDocumentationFile>True</GenerateDocumentationFile>

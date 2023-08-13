@@ -8,11 +8,18 @@ SerialPort port = new("COM5", BaudRates.BR57600);
 port.Connect();
 while ( true && port.IsConnected)
 {
-    port.Write<COMGetInput>(new(true));
+    port.CancelCurrentIO(tx: false);
+    port.FlushRXBuffer();
+
+    port.Write(new byte[] { 0x01 });
+
+    Thread.Sleep(100);
+    var btr = port.BytesToRead;
 
     port.Read(out COMInputReport report);
-
     Console.Clear();
+    Console.WriteLine(btr);
+    Console.WriteLine(port.BytesToRead);
     Console.WriteLine(report);
 }
 
@@ -26,14 +33,13 @@ internal struct COMGetInput
     public COMGetInput(bool init=true) { }
 }
 
-[StructLayout(LayoutKind.Sequential, Pack = 1)]
+[StructLayout(LayoutKind.Sequential, Pack = 1, Size = 64)]
 internal struct COMInputReport
 {
     public byte id = 0;
     [MarshalAs(UnmanagedType.ByValArray, SizeConst = 12)]
     public short[] Axis = new short[12];
-    [MarshalAs(UnmanagedType.ByValArray, SizeConst = 4)]
-    public byte[] Buttons = new byte[4];
+    public uint Buttons = 0;
     [MarshalAs(UnmanagedType.ByValArray, SizeConst = 2)]
     public ushort[] Pov = new ushort[2];
     [MarshalAs(UnmanagedType.ByValArray, SizeConst = 3)]
@@ -41,8 +47,7 @@ internal struct COMInputReport
     [MarshalAs(UnmanagedType.ByValArray, SizeConst = 3)]
     public short[] Gyro = new short[3];
 
-    public COMInputReport(bool init = true) { }
-
+    public COMInputReport() { }
     public override string ToString()
     {
         string outStr="";

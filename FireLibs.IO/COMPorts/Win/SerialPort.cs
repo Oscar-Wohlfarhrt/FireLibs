@@ -174,37 +174,35 @@ namespace FireLibs.IO.COMPorts.Win
             }
         }
         /// <summary>
-        /// Clear the recive buffer of the port
+        /// Clear the receive buffer of the port
         /// </summary>
         /// <returns>True if the operation was successful</returns>
-        public bool FlushRXBuffer()
-        {
-            if (IsConnected && port != null)
-                return PurgeComm(port.DangerousGetHandle(),PurgeEnum.PURGE_RXCLEAR);
-            
-            return false;
-        }
+        public bool FlushRXBuffer() => PurgeCom(true, false, false, false);
         /// <summary>
         /// Clear the transmit buffer of the port
         /// </summary>
         /// <returns>True if the operation was successful</returns>
-        public bool FlushTXBuffer()
-        {
-            if (IsConnected && port != null)
-                return PurgeComm(port.DangerousGetHandle(), PurgeEnum.PURGE_TXCLEAR);
-
-            return false;
-        }
+        public bool FlushTXBuffer() => PurgeCom(false, true, false,false);
         /// <summary>
-        /// Cancel transmit and recive current operations of the port
+        /// Cancel transmit and receive current operations of the port
         /// </summary>
         /// <param name="rx">If is true cancel revice operations</param>
         /// <param name="tx">If is true cancel transmit operations</param>
         /// <returns>True if the operation was successful</returns>
-        public bool CancelCurrentIO(bool rx = true, bool tx = true)
+        public bool CancelCurrentIO(bool rx = true, bool tx = true) => PurgeCom(false, false,rx, tx);
+        /// <summary>
+        /// Clears/Cancel Buffers/Operations of the port
+        /// </summary>
+        /// <param name="rxBuf">If is true clears receive buffer of the port</param>
+        /// <param name="txBuf">If is true clears transmit buffer of the port</param>
+        /// <param name="rxOps">If is true abort current receive operations of the port</param>
+        /// <param name="txOps">If is true abort current transmit operations of the port</param>
+        /// <returns></returns>
+        public bool PurgeCom(bool rxBuf = true, bool txBuf = true, bool rxOps = true, bool txOps = true)
         {
             if (IsConnected && port != null)
-                return PurgeComm(port.DangerousGetHandle(), (tx?PurgeEnum.PURGE_TXABORT:0) | (rx?PurgeEnum.PURGE_RXABORT:0));
+                return PurgeComm(port.DangerousGetHandle(), (txBuf ? PurgeEnum.PURGE_TXCLEAR : 0) | (rxBuf ? PurgeEnum.PURGE_RXCLEAR : 0)
+                    | (txOps ? PurgeEnum.PURGE_TXABORT : 0) | (rxOps ? PurgeEnum.PURGE_RXABORT : 0));
 
             return false;
         }
@@ -276,6 +274,42 @@ namespace FireLibs.IO.COMPorts.Win
             Marshal.FreeHGlobal(ptr);
             return bytesReaded;
         }
+        private COMMPROP commprop;
+        private COMMPROP? COMMProperties
+        {
+            get
+            {
+                if (IsConnected && port != null)
+                {
+                    GetCommProperties(port.DangerousGetHandle(), ref commprop);
+                    return commprop;
+                }
+                else
+                    return null;
+            }
+        }
+        private COMSTAT? COMStats
+        {
+            get
+            {
+                if (IsConnected && port != null)
+                {
+                    ClearCommError(port.DangerousGetHandle(), out uint errors, out COMSTAT comStats);
+                    return comStats;
+                }
+                else
+                    return null;
+            }
+        }
+        /// <summary>
+        /// Gets the bytes stored on the recieve buffer of the port. Returns 0 if there are no bytes in the buffer or the port is disconnected.
+        /// </summary>
+        public uint BytesToRead => (COMStats?.cbInQue) ?? 0;
+        /// <summary>
+        /// Gets the bytes stored on the transmit buffer of the port. Returns 0 if there are no bytes in the buffer or the port is disconnected.
+        /// </summary>
+        public uint BytesToWrite => (COMStats?.cbOutQue) ?? 0;
+
         /// <summary>
         /// Query the connected COM ports using WMI queries
         /// </summary>

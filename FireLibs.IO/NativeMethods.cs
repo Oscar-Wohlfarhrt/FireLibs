@@ -6,6 +6,7 @@
 using FireLibs.IO.COMPorts.Win;
 using Microsoft.Win32.SafeHandles;
 using System.Collections.Specialized;
+using System.Reflection.Metadata;
 using System.Runtime.InteropServices;
 
 namespace FireLibs.IO
@@ -213,10 +214,10 @@ namespace FireLibs.IO
             new() { fmtid = new Guid(0x540b947e, 0x8b40, 0x45bc, 0xa8, 0xa2, 0x6a, 0x0b, 0x89, 0x4c, 0xbd, 0xa2), pid = 4 };
 
         [DllImport("setupapi.dll", EntryPoint = "SetupDiGetDeviceRegistryProperty")]
-        public static extern bool SetupDiGetDeviceRegistryProperty(IntPtr deviceInfoSet, ref SP_DEVINFO_DATA deviceInfoData, int propertyVal, ref int propertyRegDataType, byte[] propertyBuffer, int propertyBufferSize, ref int requiredSize);
+        internal static extern bool SetupDiGetDeviceRegistryProperty(IntPtr deviceInfoSet, ref SP_DEVINFO_DATA deviceInfoData, int propertyVal, ref int propertyRegDataType, byte[] propertyBuffer, int propertyBufferSize, ref int requiredSize);
 
         [DllImport("setupapi.dll", EntryPoint = "SetupDiGetDevicePropertyW", SetLastError = true)]
-        public static extern bool SetupDiGetDeviceProperty(IntPtr deviceInfo, ref SP_DEVINFO_DATA deviceInfoData, ref DEVPROPKEY propkey, ref ulong propertyDataType, byte[] propertyBuffer, int propertyBufferSize, ref int requiredSize, uint flags);
+        internal static extern bool SetupDiGetDeviceProperty(IntPtr deviceInfo, ref SP_DEVINFO_DATA deviceInfoData, ref DEVPROPKEY propkey, ref ulong propertyDataType, byte[] propertyBuffer, int propertyBufferSize, ref int requiredSize, uint flags);
 
         [DllImport("setupapi.dll")]
         static internal extern bool SetupDiEnumDeviceInfo(IntPtr deviceInfoSet, int memberIndex, ref SP_DEVINFO_DATA deviceInfoData);
@@ -570,6 +571,47 @@ namespace FireLibs.IO
 
         [DllImport("kernel32.dll")]
         static internal extern bool PurgeComm(IntPtr hFile, PurgeEnum dwFlags);
+        [DllImport("kernel32.dll")]
+        static internal extern bool GetCommProperties(IntPtr hFile, ref COMMPROP lpCommProp);
+
+        [StructLayout(LayoutKind.Sequential)]
+        internal struct COMMPROP
+        {
+            internal ushort wPacketLength;
+            internal ushort wPacketVersion;
+            internal uint dwServiceMask;
+            internal uint dwReserved1;
+            internal uint dwMaxTxQueue;
+            internal uint dwMaxRxQueue;
+            internal uint dwMaxBaud;
+            internal uint dwProvSubType;
+            internal uint dwProvCapabilities;
+            internal uint dwSettableParams;
+            internal uint dwSettableBaud;
+            internal ushort wSettableData;
+            internal ushort wSettableStopParity;
+            internal uint dwCurrentTxQueue;
+            internal uint dwCurrentRxQueue;
+            internal uint dwProvSpec1;
+            internal uint dwProvSpec2;
+            internal ushort wcProvChar; //original type is WCHAR[1]
+        }
+        [DllImport("kernel32.dll")]
+        internal static extern bool ClearCommError(IntPtr hFile, [Out, Optional] out uint lpErrors, [Out, Optional] out COMSTAT lpStat);
+        [StructLayout(LayoutKind.Sequential)]
+        internal struct COMSTAT
+        {
+            public const uint fCtsHold = 0x1;
+            public const uint fDsrHold = 0x2;
+            public const uint fRlsdHold = 0x4;
+            public const uint fXoffHold = 0x8;
+            public const uint fXoffSent = 0x10;
+            public const uint fEof = 0x20;
+            public const uint fTxim = 0x40;
+            public uint Flags;
+            public uint cbInQue;
+            public uint cbOutQue;
+        }
         #endregion COMM
     }
 }

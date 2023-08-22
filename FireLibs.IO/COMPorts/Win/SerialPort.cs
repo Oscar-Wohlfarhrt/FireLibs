@@ -207,7 +207,7 @@ namespace FireLibs.IO.COMPorts.Win
             return false;
         }
         /// <summary>
-        /// Write a byte buffer to the port.
+        /// Writes a byte buffer to the port.
         /// </summary>
         /// <param name="buffer">Byte array to be written into the port</param>
         /// <returns>The number of bytes written</returns>
@@ -272,6 +272,40 @@ namespace FireLibs.IO.COMPorts.Win
             }
             buffer = Marshal.PtrToStructure<T>(ptr);
             Marshal.FreeHGlobal(ptr);
+            return bytesReaded;
+        }
+        /// <summary>
+        /// Unsafe version of the Write function
+        /// Writes a byte buffer to the port.
+        /// </summary>
+        /// <param name="buffer">Unsafe pointer to the structure/array</param>
+        /// <param name="offset">Offset of the data inside of the pointer</param>
+        /// <param name="count">Count of bytes to write</param>
+        /// <returns>The number of bytes written</returns>
+        public unsafe uint Write(int* buffer, uint offset, uint count)
+        {
+            uint bytesWritten = 0;
+            if (IsConnected && port != null)
+            {
+                WriteFile(port.DangerousGetHandle(), buffer + offset, count, out bytesWritten, IntPtr.Zero);
+            }
+            return bytesWritten;
+        }
+        /// <summary>
+        /// Unsafe version of the Read function
+        /// Reads a byte buffer from the port.
+        /// </summary>
+        /// <param name="buffer">Unsafe pointer to the structure/array</param>
+        /// <param name="offset">Offset of the data inside of the pointer</param>
+        /// <param name="count">Count of bytes to read</param>
+        /// <returns>The number of bytes readed</returns>
+        public unsafe uint Read(int* buffer, uint offset, uint count)
+        {
+            uint bytesReaded = 0;
+            if (IsConnected && port != null)
+            {
+                ReadFile(port.DangerousGetHandle(), buffer + offset, count, out bytesReaded, IntPtr.Zero);
+            }
             return bytesReaded;
         }
         private COMMPROP commprop;

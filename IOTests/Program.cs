@@ -1,12 +1,15 @@
 ﻿using FireLibs.IO.COMPorts.Win;
+using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 
 /* Program to test library functions and check it's functionalities */
 
-SerialPort port = new("COM5", BaudRates.BR57600);
+Console.WriteLine($"{50:X4}");
+
+/*SerialPort port = new("COM3", BaudRates.BR57600);
 
 port.Connect();
-while ( true && port.IsConnected)
+while (true && port.IsConnected)
 {
     port.CancelCurrentIO(tx: false);
     port.FlushRXBuffer();
@@ -15,15 +18,20 @@ while ( true && port.IsConnected)
 
     Thread.Sleep(100);
     var btr = port.BytesToRead;
+    COMInputReport report = new();
+    unsafe
+    {
+        int* ptr = (int*)Unsafe.AsPointer(ref report);
 
-    port.Read(out COMInputReport report);
+        port.Read(ptr, 0, (uint)Marshal.SizeOf<COMInputReport>());
     Console.Clear();
     Console.WriteLine(btr);
-    Console.WriteLine(port.BytesToRead);
+    //Console.WriteLine(port.BytesToRead);
     Console.WriteLine(report);
+    }
 }
 
-port.Disconnect();
+port.Disconnect();*/
 
 
 [StructLayout(LayoutKind.Sequential, Pack = 1)]

@@ -7,6 +7,7 @@ using FireLibs.IO.COMPorts.Win;
 using Microsoft.Win32.SafeHandles;
 using System.Collections.Specialized;
 using System.Reflection.Metadata;
+using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 
 namespace FireLibs.IO
@@ -76,6 +77,9 @@ namespace FireLibs.IO
         [DllImport("kernel32.dll", SetLastError = true)]
         static internal extern bool ReadFile(IntPtr hFile, IntPtr lpBuffer, uint nNumberOfBytesToRead, out uint lpNumberOfBytesRead, IntPtr lpOverlapped);
 
+        [DllImport("kernel32.dll", SetLastError = true)]
+        static internal unsafe extern bool ReadFile(IntPtr hFile, int* lpBuffer, uint nNumberOfBytesToRead, out uint lpNumberOfBytesRead, IntPtr lpOverlapped);
+
         [DllImport("winusb.dll", SetLastError = true)]
         static internal extern bool WinUsb_ReadPipe(IntPtr InterfaceHandle, byte PipeID, byte[] Buffer, int BufferLength, ref int LengthTransferred, IntPtr Overlapped);
 
@@ -86,6 +90,8 @@ namespace FireLibs.IO
         static internal extern bool WriteFile(IntPtr hFile, byte[] lpBuffer, uint nNumberOfBytesToWrite, out uint lpNumberOfBytesWritten, IntPtr lpOverlapped);
         [DllImport("kernel32.dll")]
         static internal extern bool WriteFile(IntPtr hFile, IntPtr lpBuffer, uint nNumberOfBytesToWrite, out uint lpNumberOfBytesWritten, IntPtr lpOverlapped);
+        [DllImport("kernel32.dll")]
+        static internal unsafe extern bool WriteFile(IntPtr hFile, int* lpBuffer, uint nNumberOfBytesToWrite, out uint lpNumberOfBytesWritten, IntPtr lpOverlapped);
         #endregion Kernel32
 
         #region SetupAPI

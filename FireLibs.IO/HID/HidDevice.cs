@@ -4,6 +4,7 @@
 */
 
 using Microsoft.Win32.SafeHandles;
+using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using System.Security.Cryptography;
 using System.Text;
@@ -323,6 +324,34 @@ namespace FireLibs.IO.HID
                 Marshal.FreeHGlobal(strPtr);
             }
         }
+        /// <summary>
+        /// Unsafe version of ReadFile function.
+        /// Reads directly from the Hid Device File/Input buffer using Windows FileApi
+        /// </summary>
+        /// <param name="buffer">Unsafe pointer to the structure/array</param>
+        /// <param name="offset">Offset of the data inside of the pointer</param>
+        /// <param name="count">Count of bytes to read</param>
+        /// <returns>A ReadWriteStatus enumeration</returns>
+        public unsafe ReadWriteStatus ReadFile(int* buffer, uint offset, uint count)
+        {
+            safeFileHandle ??= OpenHandle(deviceInfo.Path, defaultExclusiveMode);
+            buffer = default;
+            try
+            {
+                if (NativeMethods.ReadFile(safeFileHandle.DangerousGetHandle(), buffer + offset, count, out uint bytesRead, IntPtr.Zero))
+                {
+                    return ReadWriteStatus.Success;
+                }
+                else
+                {
+                    return ReadWriteStatus.NoData;
+                }
+            }
+            catch (Exception)
+            {
+                return ReadWriteStatus.Error;
+            }
+        }
 
         /* ------- Write ------- */
         /// <summary>
@@ -393,6 +422,33 @@ namespace FireLibs.IO.HID
             catch (Exception)
             {
                 Marshal.FreeHGlobal(strPtr);
+                return ReadWriteStatus.Error;
+            }
+        }
+        /// <summary>
+        /// Unsafe version of WriteFile function.
+        /// Writes directly to the Hid Device File/Output buffer using Windows FileApi
+        /// </summary>
+        /// <param name="buffer">Unsafe pointer to the structure/array</param>
+        /// <param name="offset">Offset of the data inside of the pointer</param>
+        /// <param name="count">Count of bytes to write</param>
+        /// <returns>A ReadWriteStatus enumeration</returns>
+        public unsafe ReadWriteStatus WriteFile(int* buffer,uint offset, uint count)
+        {
+            safeFileHandle ??= OpenHandle(deviceInfo.Path, defaultExclusiveMode);
+            try
+            {
+                if (NativeMethods.WriteFile(safeFileHandle.DangerousGetHandle(), buffer + offset, count, out uint bytesWrite, IntPtr.Zero))
+                {
+                    return ReadWriteStatus.Success;
+                }
+                else
+                {
+                    return ReadWriteStatus.NoData;
+                }
+            }
+            catch (Exception)
+            {
                 return ReadWriteStatus.Error;
             }
         }

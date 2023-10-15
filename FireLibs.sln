@@ -5,7 +5,9 @@ VisualStudioVersion = 17.4.33103.184
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "FireLibs.IO", "FireLibs.IO\FireLibs.IO.csproj", "{6463C017-4C2F-4E69-8976-E79FF1892E3E}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "IOTests", "IOTests\IOTests.csproj", "{E551EC45-6459-47AB-921D-356E3DCDA1A3}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "IOTests", "IOTests\IOTests.csproj", "{E551EC45-6459-47AB-921D-356E3DCDA1A3}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FireLibs.Web", "FireLibs.Web\FireLibs.Web.csproj", "{62B5B7B0-BB22-4D46-B041-3132C0B17287}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -31,6 +33,14 @@ Global
 		{E551EC45-6459-47AB-921D-356E3DCDA1A3}.Release|Any CPU.Build.0 = Release|Any CPU
 		{E551EC45-6459-47AB-921D-356E3DCDA1A3}.Release|x64.ActiveCfg = Release|Any CPU
 		{E551EC45-6459-47AB-921D-356E3DCDA1A3}.Release|x64.Build.0 = Release|Any CPU
+		{62B5B7B0-BB22-4D46-B041-3132C0B17287}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{62B5B7B0-BB22-4D46-B041-3132C0B17287}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{62B5B7B0-BB22-4D46-B041-3132C0B17287}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{62B5B7B0-BB22-4D46-B041-3132C0B17287}.Debug|x64.Build.0 = Debug|Any CPU
+		{62B5B7B0-BB22-4D46-B041-3132C0B17287}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{62B5B7B0-BB22-4D46-B041-3132C0B17287}.Release|Any CPU.Build.0 = Release|Any CPU
+		{62B5B7B0-BB22-4D46-B041-3132C0B17287}.Release|x64.ActiveCfg = Release|Any CPU
+		{62B5B7B0-BB22-4D46-B041-3132C0B17287}.Release|x64.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

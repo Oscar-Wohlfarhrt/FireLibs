@@ -475,5 +475,29 @@ namespace FireLibs.IO.HID
             return HidD_SetFeature(safeFileHandle.DangerousGetHandle(), data, data.Length);
         }
         #endregion I/O Operations
+
+        #region Additional configs
+        /// <summary>
+        /// Gets the number of buffers assigned to this device
+        /// </summary>
+        /// <param name="count">The number of input buffers this device have</param>
+        /// <returns>True if the operation was successful</returns>
+        public bool GetInputBufferCount(out int count)
+        {
+            safeFileHandle ??= OpenHandle(deviceInfo.Path, defaultExclusiveMode);
+            count = 0;
+            return HidD_GetNumInputBuffers(safeFileHandle.DangerousGetHandle(), ref count);
+        }
+        /// <summary>
+        /// Sets the number of buffers assigned to this device
+        /// </summary>
+        /// <param name="count">The number of input buffers to set</param>
+        /// <returns>True if the operation was successful</returns>
+        public bool SetInputBufferCount(int count)
+        {
+            safeFileHandle ??= OpenHandle(deviceInfo.Path, defaultExclusiveMode);
+            return HidD_SetNumInputBuffers(safeFileHandle.DangerousGetHandle(), count);
+        }
+        #endregion Additional configs
     }
 }

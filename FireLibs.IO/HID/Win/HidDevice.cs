@@ -10,7 +10,7 @@ using System.Security.Cryptography;
 using System.Text;
 using static FireLibs.IO.NativeMethods;
 
-namespace FireLibs.IO.HID
+namespace FireLibs.IO.HID.Win
 {
     /// <summary>
     /// A class for HidDevices. Only works on windows.

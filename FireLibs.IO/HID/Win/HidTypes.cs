@@ -5,7 +5,7 @@
 
 using static FireLibs.IO.NativeMethods;
 
-namespace FireLibs.IO.HID
+namespace FireLibs.IO.HID.Win
 {
     /// <summary>
     /// Status enumeration for Read/Write operations
@@ -135,7 +135,6 @@ namespace FireLibs.IO.HID
             NumberFeatureButtonCaps = capabilities.NumberFeatureButtonCaps;
             NumberFeatureValueCaps = capabilities.NumberFeatureValueCaps;
             NumberFeatureDataIndices = capabilities.NumberFeatureDataIndices;
-
         }
 
 #pragma warning disable CS1591 // Falta el comentario XML para el tipo o miembro visible públicamente

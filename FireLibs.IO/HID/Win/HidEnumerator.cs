@@ -5,7 +5,7 @@ using System.Text;
 using System.Text.RegularExpressions;
 using static FireLibs.IO.NativeMethods;
 
-namespace FireLibs.IO.HID
+namespace FireLibs.IO.HID.Win
 {
     /// <summary>
     /// A Hid Device Enumerator class to get available/connected hid devices. Only works on Windows

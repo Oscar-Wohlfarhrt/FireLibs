@@ -48,7 +48,6 @@ namespace FireLibs.Web.TCP
             TcpListener server = (TcpListener)(ar.AsyncState ?? this.server);
             TcpClient cli = server.EndAcceptTcpClient(ar);
 
-            Console.WriteLine("Cliente recived");
             OnClientConnected?.Invoke(this, new(cli));
 
             asyncRes = server.BeginAcceptTcpClient(ReciveClient, server);

@@ -52,7 +52,7 @@ namespace FireLibs.Web.Http
             Headers[(int)status] + eol + (extraHeaders != null ? string.Join(eol, extraHeaders) + eol : "") + eol;
     }
 
-    public class DSHttpServer
+    public class HttpServer
     {
         TcpServer server;
         public int RequestTimeout { get; set; }
@@ -60,8 +60,8 @@ namespace FireLibs.Web.Http
         public delegate HttpStatus GetAction(string op, IPAddress? ip, string path, out byte[] body, out string[]? extraHeaders);
         public GetAction? GetResponse { get; set; }
 
-        public DSHttpServer(int port, int timeout = 1000) : this(IPAddress.Any, port, timeout) { }
-        public DSHttpServer(IPAddress ip, int port, int timeout = 1000)
+        public HttpServer(int port, int timeout = 1000) : this(IPAddress.Any, port, timeout) { }
+        public HttpServer(IPAddress ip, int port, int timeout = 1000)
         {
             server = new TcpServer(ip, port);
             server.OnClientConnected += ClientConnected;

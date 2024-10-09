@@ -94,6 +94,6 @@ namespace FireLibs.Logging
         /// <summary>
         /// Removes all existing loggers. Intended for calling on program end.
         /// </summary>
-        public static void RemoveAllLogger() => loggers.Clear();
+        public static void RemoveAllLoggers() => loggers.Clear();
     }
 }

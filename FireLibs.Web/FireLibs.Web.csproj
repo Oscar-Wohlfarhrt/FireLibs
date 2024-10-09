@@ -8,4 +8,8 @@
     <Title>FireLibs.Web</Title>
   </PropertyGroup>
 
+  <ItemGroup>
+    <PackageReference Include="FireLibs.Logging" Version="0.1.1" />
+  </ItemGroup>
+
 </Project>

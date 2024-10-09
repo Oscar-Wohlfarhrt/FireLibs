@@ -26,6 +26,7 @@ namespace FireLibs.Web.TCP
 
         TcpListener server;
         IAsyncResult? asyncRes = null;
+        public bool IsOpen { get; private set; } = false;
 
         public TcpServer(IPAddress ip, int port)
         {
@@ -34,10 +35,12 @@ namespace FireLibs.Web.TCP
         public void Start()
         {
             server.Start();
+            IsOpen = true;
             asyncRes = server.BeginAcceptTcpClient(ReciveClient, server);
         }
         public void Stop()
         {
+            IsOpen = false;
             if (asyncRes != null && !asyncRes.IsCompleted)
                 server.EndAcceptTcpClient(asyncRes);
             server.Stop();
@@ -50,7 +53,8 @@ namespace FireLibs.Web.TCP
 
             OnClientConnected?.Invoke(this, new(cli));
 
-            asyncRes = server.BeginAcceptTcpClient(ReciveClient, server);
+            if (IsOpen)
+                asyncRes = server.BeginAcceptTcpClient(ReciveClient, server);
         }
     }
 }

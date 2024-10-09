@@ -27,6 +27,8 @@ namespace FireLibs.Web.TCP
         Socket server;
         IAsyncResult? asyncRes = null;
 
+        public bool IsOpen { get; private set; } = false;
+
         public SocketServer(SocketType type, ProtocolType protocol, EndPoint endPoint)
         {
             server = new Socket(type,protocol);
@@ -35,10 +37,12 @@ namespace FireLibs.Web.TCP
         public void Start()
         {
             server.Listen();
+            IsOpen = true;
             asyncRes = server.BeginAccept(ReciveClient, server);
         }
         public void Stop()
         {
+            IsOpen = false;
             if (asyncRes != null && !asyncRes.IsCompleted)
                 server.EndAccept(asyncRes);
             server.Close();
@@ -51,7 +55,8 @@ namespace FireLibs.Web.TCP
 
             OnSocketConnected?.Invoke(this, new(cli));
 
-            asyncRes = server.BeginAccept(ReciveClient, server);
+            if(IsOpen)
+                asyncRes = server.BeginAccept(ReciveClient, server);
         }
     }
 }

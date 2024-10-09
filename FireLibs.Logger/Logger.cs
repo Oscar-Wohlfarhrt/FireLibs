@@ -13,12 +13,12 @@ namespace FireLibs.Logging
     /// </summary>
     public class Logger : IDisposable
     {
-        private readonly ConcurrentQueue<LogEntry> logQueue = [];
+        private readonly ConcurrentQueue<LogEntry> logQueue = new();
 
         /// <summary>
         /// List of logger services registered for this logger
         /// </summary>
-        private readonly List<ILogger> loggers = [];
+        private readonly List<ILogger> loggers = new();
 
         private readonly Thread logThread;
         private readonly EventWaitHandle wh = new AutoResetEvent(true);

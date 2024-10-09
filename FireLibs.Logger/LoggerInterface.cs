@@ -9,18 +9,26 @@ namespace FireLibs.Logging
     /// <summary>
     /// Represents all the information of a log entry
     /// </summary>
-    /// <param name="logLevel">Level at which the log will be written</param>
-    /// <param name="message">Log message to be written</param>
-    public struct LogEntry(LogLevel logLevel, string message)
+    public struct LogEntry
     {
         /// <summary>
         /// Level at which the log will be written
         /// </summary>
-        public LogLevel LogLevel { get; set; } = logLevel;
+        public LogLevel LogLevel { get; set; }
         /// <summary>
         /// Log message to be written
         /// </summary>
-        public string Message { get; set; } = message;
+        public string Message { get; set; }
+        /// <summary>
+        /// Creates an instance of <see cref="LogEntry"/>
+        /// </summary>
+        /// <param name="logLevel">Level at which the log will be written</param>
+        /// <param name="message">Log message to be written</param>
+        public LogEntry(LogLevel logLevel, string message)
+        {
+            LogLevel = logLevel;
+            Message = message;
+        }
 
         /// <inheritdoc/>
         public override readonly string ToString() => $"{LogLevel}: {Message}";

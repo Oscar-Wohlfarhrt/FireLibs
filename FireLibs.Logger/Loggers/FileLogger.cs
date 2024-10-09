@@ -74,28 +74,38 @@ namespace FireLibs.Logging.Loggers
     /// <summary>
     /// Configuration structure for <see cref="FileLogger"/>
     /// </summary>
-    /// <param name="logLevels"><inheritdoc cref="LogLevels" path="/summary"/></param>
-    /// <param name="fileName"><inheritdoc cref="FileIdentifier" path="/summary"/></param>
-    /// <param name="folderName"><inheritdoc cref="LogFolder" path="/summary"/></param>
-    /// <param name="maxFiles"><inheritdoc cref="MaxFiles" path="/summary"/></param>
-    public struct FileLoggerConfiguration(LogLevel[] logLevels, string fileName = "log-", string folderName = "Logs", int maxFiles = 5)
+    public struct FileLoggerConfiguration
     {
         /// <summary>
         /// A file indentifier for the <see cref="FileLogger"/>. The <see cref="FileLogger"/> will add the time and date of the creation concatenated after this string.
         /// </summary>
-        public string FileIdentifier { get; private set; } = fileName;
+        public string FileIdentifier { get; private set; }
         /// <summary>
         /// The folder where the log files will be created.
         /// </summary>
-        public string LogFolder { get; private set; } = folderName;
+        public string LogFolder { get; private set; }
         /// <summary>
         /// The maximum number of files (corresponding to <see cref="FileIdentifier"/> parameter) that will be retained.
         /// </summary>
-        public int MaxFiles { get; private set; } = maxFiles;
+        public int MaxFiles { get; private set; }
         /// <summary>
         /// The log levels registered by the <see cref="FileLogger"/>
         /// </summary>
-        public LogLevel[] LogLevels { get; private set; } = logLevels;
+        public LogLevel[] LogLevels { get; private set; }
+        /// <summary>
+        /// Creates an instance of <see cref="FileLoggerConfiguration"/>
+        /// </summary>
+        /// <param name="logLevels"><inheritdoc cref="LogLevels" path="/summary"/></param>
+        /// <param name="fileName"><inheritdoc cref="FileIdentifier" path="/summary"/></param>
+        /// <param name="folderName"><inheritdoc cref="LogFolder" path="/summary"/></param>
+        /// <param name="maxFiles"><inheritdoc cref="MaxFiles" path="/summary"/></param>
+        public FileLoggerConfiguration(LogLevel[] logLevels, string fileName = "log-", string folderName = "Logs", int maxFiles = 5)
+        {
+            FileIdentifier = fileName;
+            LogFolder = folderName;
+            MaxFiles = maxFiles;
+            LogLevels = logLevels;
+        }
     }
     /// <summary>
     /// Extension methods for the <see cref="FileLogger"/>

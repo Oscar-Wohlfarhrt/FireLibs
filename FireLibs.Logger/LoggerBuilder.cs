@@ -11,7 +11,7 @@ namespace FireLibs.Logging
     /// </summary>
     public class LoggerBuilder
     {
-        private readonly List<ILogger> registeredLoggers = [];
+        private readonly List<ILogger> registeredLoggers = new();
 
         /// <summary>
         /// Register a <see cref="ILogger"/> for a new <see cref="Logger"/>

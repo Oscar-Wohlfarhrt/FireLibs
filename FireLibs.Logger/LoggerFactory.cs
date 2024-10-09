@@ -51,7 +51,7 @@ namespace FireLibs.Logging
     /// </summary>
     public static class LoggerFactory
     {
-        private static readonly Dictionary<string, Logger> loggers = [];
+        private static readonly Dictionary<string, Logger> loggers = new();
 
         private static Logger CreateLogger(string loggerName,LoggerBuilder builder)
         {

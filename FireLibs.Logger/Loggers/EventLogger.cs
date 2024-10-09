@@ -51,18 +51,27 @@ namespace FireLibs.Logging.Loggers
     /// <summary>
     /// Configuration structure for <see cref="EventLogger"/>
     /// </summary>
-    /// <param name="logLevels"><inheritdoc cref="LogLevels" path="/summary"/></param>
-    /// <param name="delegates"><inheritdoc cref="Delegates" path="/summary"/></param>
-    public struct EventLoggerConfiguration(LogLevel[] logLevels, EventLoggerDelegate[] delegates)
+    public struct EventLoggerConfiguration
     {
         /// <summary>
         /// An array of the functions suscribed to the <see cref="EventLogger"/>
         /// </summary>
-        public EventLoggerDelegate[] Delegates { get; private set; } = delegates;
+        public EventLoggerDelegate[] Delegates { get; private set; }
         /// <summary>
         /// The log levels registered by the <see cref="EventLogger"/>
         /// </summary>
-        public LogLevel[] LogLevels { get; private set; } = logLevels;
+        public LogLevel[] LogLevels { get; private set; }
+
+        /// <summary>
+        /// Creates an instance of <see cref="EventLoggerConfiguration"/>
+        /// </summary>
+        /// <param name="logLevels"><inheritdoc cref="LogLevels" path="/summary"/></param>
+        /// <param name="delegates"><inheritdoc cref="Delegates" path="/summary"/></param>
+        public EventLoggerConfiguration(LogLevel[] logLevels, EventLoggerDelegate[] delegates)
+        {
+            Delegates = delegates;
+            LogLevels = logLevels;
+        }
     }
     /// <summary>
     /// Extension methods for the <see cref="EventLogger"/>

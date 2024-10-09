@@ -13,10 +13,18 @@ namespace FireLibs.Logging.Loggers
     /// <remarks>
     /// Creates an instance of <see cref="VSConsoleLogger"/>
     /// </remarks>
-    /// <param name="logLevels">The log levels registered by the <see cref="VSConsoleLogger"/></param>
-    public class VSConsoleLogger(LogLevel[] logLevels) : ILogger
+    public class VSConsoleLogger : ILogger
     {
-        private readonly LogLevel[] logLevels = logLevels;
+        private readonly LogLevel[] logLevels;
+
+        /// <summary>
+        /// Creates an instance of <see cref="VSConsoleLogger"/>
+        /// </summary>
+        /// <param name="logLevels">The log levels registered by the <see cref="VSConsoleLogger"/></param>
+        public VSConsoleLogger(LogLevel[] logLevels)
+        {
+            this.logLevels = logLevels;
+        }
 
         /// <inheritdoc/>
         public bool IsEnabled(LogLevel logLevel) => logLevels.Contains(logLevel);

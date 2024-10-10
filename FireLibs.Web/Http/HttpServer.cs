@@ -80,9 +80,11 @@ namespace FireLibs.Web.Http
         SocketServer server;
         public int RequestTimeout { get; set; }
 
-        public delegate HttpStatus GetAction(string op, IPAddress? ip, string path, Dictionary<string, string[]> inHeaders, out byte[] body, out Dictionary<string, string[]> outHeaders);
+        public delegate HttpStatus GetAction(string op, IPAddress? ip, string path, Dictionary<string, string[]> inHeaders, string content, out byte[] body, out Dictionary<string, string[]> outHeaders);
         public GetAction? GetResponse { get; set; }
         private Logger? _logger;
+
+        Regex reqMatcher = new(@"^(.+?) (.+?) (HTTP\/.+?)\r\n((?:.*?\r\n)*?)?\r\n(.*)", RegexOptions.Singleline);
 
         public HttpServer(int port, int timeout = 1000, Logger? logger = null) : this(IPAddress.Any, port, timeout, logger) { }
         public HttpServer(IPAddress ip, int port, int timeout = 1000, Logger? logger = null)
@@ -94,7 +96,7 @@ namespace FireLibs.Web.Http
         }
         public void Start() => server.Start();
         public void Stop() => server.Stop();
-        private static HttpStatus DefaultResponse(string op, IPAddress? ip, string path, Dictionary<string, string[]> inHeaders, out byte[] body, out Dictionary<string, string[]> outHeaders)
+        private static HttpStatus DefaultResponse(string op, IPAddress? ip, string path, Dictionary<string, string[]> inHeaders, string content, out byte[] body, out Dictionary<string, string[]> outHeaders)
         {
             body = Array.Empty<byte>();
             outHeaders = new();
@@ -118,9 +120,9 @@ namespace FireLibs.Web.Http
                 string request = Encoding.UTF8.GetString(buffer);
                 _logger?.LogDebug("WebServer Log:\n" + request.Replace("\r\n", " >>\n"));
 
-                Match match = Regex.Match(request, @"^(.+?) (.+?) (HTTP\/.+?)\r\n((?:.*?\r\n)*?)?\r\n");
+                Match match = reqMatcher.Match(request);
 
-                string operation = "", relUrl = "", httpVersion = "";
+                string operation = "", relUrl = "", httpVersion = "", content = "";
                 Dictionary<string, string[]> headers = new();
                 if (match.Groups.Count >= 3)
                 {
@@ -146,9 +148,11 @@ namespace FireLibs.Web.Http
 
                     }
                 }
+                if (match.Groups.Count >= 5)
+                    content = match.Groups[5].Value;
 
                 HttpStatus status = (GetResponse ?? DefaultResponse)
-                    (operation, ((IPEndPoint?)e.LocalIp)?.Address, relUrl, headers, out byte[] body, out Dictionary<string, string[]> outHeaders);
+                    (operation, ((IPEndPoint?)e.LocalIp)?.Address, relUrl, headers, content, out byte[] body, out Dictionary<string, string[]> outHeaders);
 
                 string response = status.GetFullHeader(outHeaders);
 

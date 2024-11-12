@@ -3,19 +3,29 @@ using System.Management;
 using System.Runtime.InteropServices;
 using System.Text;
 using System.Text.RegularExpressions;
-using static FireLibs.IO.HID.NativeMethods;
+using static FireLibs.IO.NativeMethods;
 
-namespace FireLibs.IO.HID
+namespace FireLibs.IO.HID.Win
 {
-    public static class WmiEnumerator
+    /// <summary>
+    /// A Hid Device Enumerator class to get available/connected hid devices. Only works on Windows
+    /// </summary>
+    public static class HidEnumerator
     {
-        public static IEnumerable<DSHidInfo> EnumerateDevices(int vid = 0, int pid = 0)
+#pragma warning disable CA1416 // Validar la compatibilidad de la plataforma
+        /// <summary>
+        /// Hid Enumerator using WMI queries to get device path, name and vendor and product ids as HidInfos
+        /// </summary>
+        /// <param name="vid">Vendor id to filter devices (use 0 to ignore it)</param>
+        /// <param name="pid">Product id to filter devices (use 0 to ignore it)</param>
+        /// <returns>A HidInfo array</returns>
+        public static IEnumerable<HidInfo> WmiEnumerateDevices(int vid = 0, int pid = 0)
         {
-            List<DSHidInfo> infos = new();
+            List<HidInfo> infos = new();
 
             string wmiQuery = @$"SELECT DeviceID FROM Win32_PnPEntity WHERE DeviceID like 'HID%VID%{(vid > 0 ? $"{vid:X4}" : "")}_PID_{(pid > 0 ? $"{pid:X4}" : "")}%'";
 
-            ManagementObjectSearcher searcher = new ManagementObjectSearcher(wmiQuery);
+            ManagementObjectSearcher searcher = new(wmiQuery);
             ManagementObjectCollection objCollection = searcher.Get();
 
             foreach (var obj in objCollection)
@@ -32,10 +42,8 @@ namespace FireLibs.IO.HID
             }
             return infos;
         }
-    }
+#pragma warning restore CA1416 // Validar la compatibilidad de la plataforma
 
-    public static class SetupApiEnumerator
-    {
         /*
          * Modified by: Oscar-Wohlfarhrt - Github: https://github.com/Oscar-Wohlfarhrt
          * Original from: jhebb and JoshWobbles - Github: https://github.com/InputMapper/Dualshock4
@@ -49,20 +57,31 @@ namespace FireLibs.IO.HID
                 return _hidClassGuid;
             }
         }
-        public static IEnumerable<HidDevice> Enumerate(int vendorId, params int[] productIds)
+        /// <summary>
+        /// Hid Enumerator using SetupApi to get device path, name and vendor and product ids as HidInfos
+        /// </summary>
+        /// <param name="vendorId">Vendor id to filter devices</param>
+        /// <param name="productIds">An array or multiple parameters with product ids to filter devices</param>
+        /// <returns>A HidInfo array</returns>
+        public static IEnumerable<HidDevice> SetupApiEnumerate(int vendorId, params int[] productIds)
         {
             return EnumerateDevices().Select(x => new HidDevice(x))
                 .Where(x => x.Attributes.VendorId == vendorId && productIds.Contains(x.Attributes.ProductId));
         }
-        public static IEnumerable<HidDevice> Enumerate(int vendorId)
+        /// <summary>
+        /// Hid Enumerator using SetupApi to get device path, name and vendor and product ids as HidInfos
+        /// </summary>
+        /// <param name="vendorId">Vendor id to filter devices</param>
+        /// <returns>A HidInfo array</returns>
+        public static IEnumerable<HidDevice> SetupApiEnumerate(int vendorId)
         {
             return EnumerateDevices().Select(x => new HidDevice(x.Path, x.Name))
                 .Where(x => x.Attributes.VendorId == vendorId);
         }
 
-        private static IEnumerable<DSHidInfo> EnumerateDevices()
+        private static IEnumerable<HidInfo> EnumerateDevices()
         {
-            List<DSHidInfo> devices = new List<DSHidInfo>();
+            List<HidInfo> devices = new();
 
             Guid HidClass = HidClassGuid;
 
@@ -89,10 +108,10 @@ namespace FireLibs.IO.HID
                         string path = GetDevicePath(infoSet, ref interfaceData);
                         string description = GetBusReportedDeviceDescription(infoSet, ref devInfoData) ?? GetDeviceDescription(infoSet, ref devInfoData);
 
-                        devices.Add(new DSHidInfo(path, description));
+                        devices.Add(new HidInfo(path, description));
                     }
                 }
-                SetupDiDestroyDeviceInfoList(infoSet);
+                _ = SetupDiDestroyDeviceInfoList(infoSet);
             }
             return devices;
         }
@@ -100,8 +119,10 @@ namespace FireLibs.IO.HID
         private static string GetDevicePath(IntPtr info, ref SP_DEVICE_INTERFACE_DATA interfaceData)
         {
             int bufferSize = 0;
-            SP_DEVICE_INTERFACE_DETAIL_DATA detailInterfaceData = new SP_DEVICE_INTERFACE_DETAIL_DATA();
-            detailInterfaceData.cbSize = IntPtr.Size == 4 ? 4 + Marshal.SystemDefaultCharSize : 8;
+            SP_DEVICE_INTERFACE_DETAIL_DATA detailInterfaceData = new()
+            {
+                cbSize = IntPtr.Size == 4 ? 4 + Marshal.SystemDefaultCharSize : 8
+            };
 
             SetupDiGetDeviceInterfaceDetailBuffer(info, ref interfaceData, IntPtr.Zero, 0, ref bufferSize, IntPtr.Zero);
             if (SetupDiGetDeviceInterfaceDetail(info, ref interfaceData, ref detailInterfaceData, bufferSize, ref bufferSize, IntPtr.Zero))

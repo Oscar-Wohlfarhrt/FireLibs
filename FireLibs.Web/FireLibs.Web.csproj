@@ -13,6 +13,7 @@
 
   <ItemGroup>
     <PackageReference Include="FireLibs.Logging" Version="0.1.1" />
+    <PackageReference Include="Microsoft.Extensions.Logging" Version="9.0.3" />
   </ItemGroup>
 
 </Project>

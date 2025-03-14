@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <script type="text/javascript" src="/js/WebServerHook.js"></script>
+</head>
+<body>
+    <h1>Test Page</h1>
+    <div id="test"></div>
+    <script>
+
+        var websocketUrl = getWebSocketUrl('/eventsServer');
+        document.write("Hello world<br>");
+        document.write(websocketUrl);
+        document.write("<br>");
+        const test = document.getElementById("test");
+        const es = new EventSource("events");
+
+        es.onmessage = (event) => {
+        test.textContent = `message: ${event.data}`;
+        };
+        es.addEventListener("test", (event) => { test.textContent = `message: test event | ${event.data}`; });
+        es.onerror = (err) => {
+        test.textContent = `error: ${err.isTrusted}`;
+        };
+
+    </script>
+</body>
+</html>

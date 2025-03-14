@@ -53,8 +53,8 @@ namespace FireLibs.Web.TCP
             Socket server = (Socket)(ar.AsyncState ?? this.server);
             Socket cli = server.EndAccept(ar);
 
-            OnSocketConnected?.Invoke(this, new(cli));
-
+            Task.Run(() => OnSocketConnected?.Invoke(this, new(cli)));
+            
             if(IsOpen)
                 asyncRes = server.BeginAccept(ReciveClient, server);
         }

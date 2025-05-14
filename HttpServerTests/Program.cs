@@ -6,7 +6,6 @@ using System.Net;
 using System.Reflection.PortableExecutable;
 using System.Text;
 using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Logging.Console;
 using System.Linq;
 
 namespace HttpServerTests
@@ -29,6 +28,12 @@ namespace HttpServerTests
 
             server.OnProcessRequest = Server_ProcessRequest;
             ws = server.CreateOrGetWebSocket("/websocket/main");
+            server.MapGet("/test", (request, options) =>
+            {
+                HttpResponse response = HttpResponse.OkResponse;
+                response.SetContent(string.Join(", ", options));
+                return response;
+            });
             logger.LogInformation("Starting Server");
 
             server.Start();

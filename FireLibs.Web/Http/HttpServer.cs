@@ -66,7 +66,7 @@ namespace FireLibs.Web.Http
 
                 _logger?.LogInformation($"{request.Operation} {request.Path} {request.Version}");
                 //_logger?.LogTrace($"\n{request.Operation} {request.Path} {request.Version}\n{string.Join("\n", request.Headers.SelectMany(kv => kv.Value.Select(v => $"{kv.Key}: {v}")))}\n");
-                string mapOp = $"{request.Operation}{request.Path}";
+                string mapOp = $"{request.Operation}{request.Path}{(request.Path.EndsWith("/")?"":"/")}";
                 KeyValuePair<string, MappedRequest> kv = mappedOperations.FirstOrDefault(pair => mapOp.StartsWith(pair.Key));
                 HttpResponse response = kv.Key != null
                     ? kv.Value(request, mapOp[kv.Key.Length..].Split("/",StringSplitOptions.RemoveEmptyEntries))
@@ -84,7 +84,7 @@ namespace FireLibs.Web.Http
         }
         public void MapOperation(string operation, string path, MappedRequest function)
         {
-            string opPath = $"{operation}{path}";
+            string opPath = $"{operation}{(path.StartsWith("/")?"":"/")}{path}{(path.EndsWith("/")?"":"/")}";
             if (!mappedOperations.TryAdd(opPath, function))
                 mappedOperations[opPath] = function;
         }

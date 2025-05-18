@@ -89,11 +89,11 @@ namespace FireLibs.Web.Http
         public string Content { get; private set; }
         public string Version { get; private set; }
 
-        public HttpResponse(HttpStatus status, Dictionary<string, List<string>> headers, string content, string version = "HTTP/1.1")
+        public HttpResponse(HttpStatus status, Dictionary<string, List<string>> headers, string content = "", string type = "", string version = "HTTP/1.1")
         {
             Status = status;
             Headers = headers;
-            Content = content;
+            SetContent(content, type);
             if (HttpVerChecker.IsMatch(version))
                 Version = version;
             else
@@ -106,7 +106,7 @@ namespace FireLibs.Web.Http
             if (Headers.ContainsKey(key))
                 Headers[key].Add(value);
             else
-                Headers.Add(key, new List<string>() { value });
+                Headers.Add(key, new() { value });
         }
         public void SetHeader(string key, List<string> value)
         {
@@ -115,13 +115,16 @@ namespace FireLibs.Web.Http
             else
                 Headers.Add(key, value);
         }
-        public void SetContent(string content)
+        public void SetContent(string content, string type="")
         {
             Content = content;
             SetContentLenght();
+            if (type != "")
+                SetContentType(type);
         }
+        public void SetContentType(string type) => SetHeader("Content-Type", new() { type });
 
         public void SetContentFromFile(string path) => SetContent(File.ReadAllText(path));
-        public void SetContentLenght() => SetHeader("Content-length", new (){ $"{Content.Length}" });
+        public void SetContentLenght() => SetHeader("Content-length", new(){ $"{Content.Length}" });
     }
 }

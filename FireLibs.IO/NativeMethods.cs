@@ -216,7 +216,7 @@ namespace FireLibs.IO
             public ulong pid;
         }
 
-        internal static DEVPROPKEY DEVPKEY_Device_BusReportedDeviceDesc =
+        internal readonly static DEVPROPKEY DEVPKEY_Device_BusReportedDeviceDesc =
             new() { fmtid = new Guid(0x540b947e, 0x8b40, 0x45bc, 0xa8, 0xa2, 0x6a, 0x0b, 0x89, 0x4c, 0xbd, 0xa2), pid = 4 };
 
         [DllImport("setupapi.dll", EntryPoint = "SetupDiGetDeviceRegistryProperty")]
@@ -450,7 +450,7 @@ namespace FireLibs.IO
                 previousSection = BitVector32.CreateSection(1, previousSection);
                 previousSection = BitVector32.CreateSection(1, previousSection);
                 fRtsControl = BitVector32.CreateSection(3, previousSection);
-                previousSection = BitVector32.CreateSection(1, fRtsControl);
+                BitVector32.CreateSection(1, fRtsControl);
             }
 
             public bool Binary
@@ -567,6 +567,7 @@ namespace FireLibs.IO
         [DllImport("kernel32.dll", SetLastError = true)]
         static internal extern bool SetCommTimeouts(IntPtr hFile, [In] ref COMMTIMEOUTS lpCommTimeouts);
 
+        [Flags]
         internal enum PurgeEnum : uint
         {
             PURGE_TXABORT = 0x0001,  // Kill the pending/current writes to the comm port.
@@ -603,7 +604,7 @@ namespace FireLibs.IO
             internal ushort wcProvChar; //original type is WCHAR[1]
         }
         [DllImport("kernel32.dll")]
-        internal static extern bool ClearCommError(IntPtr hFile, [Out, Optional] out uint lpErrors, [Out, Optional] out COMSTAT lpStat);
+        internal static extern bool ClearCommError(IntPtr hFile, [Out] out uint lpErrors, [Out] out COMSTAT lpStat);
         [StructLayout(LayoutKind.Sequential)]
         internal struct COMSTAT
         {

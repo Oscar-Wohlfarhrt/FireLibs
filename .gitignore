@@ -2,5 +2,6 @@
 **/bin
 **/publish
 **/.vs
+**/.sonarqube
 **/obj/**
 **/obj

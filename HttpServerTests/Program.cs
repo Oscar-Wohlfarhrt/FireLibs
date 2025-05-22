@@ -10,11 +10,11 @@ using System.Linq;
 
 namespace HttpServerTests
 {
-    internal class Program
+    internal static class Program
     {
         static ILoggerFactory logFac = LoggerFactory.Create((builder) =>
             builder.SetMinimumLevel(LogLevel.Debug).AddProvider(new ToEventLoggerProvider()));
-        static ILogger logger = logFac.CreateLogger<Program>();
+        static ILogger logger = logFac.CreateLogger("Program");
 
         static WebSocket ws;
         static HttpServer server = new(5100, 5000, logFac.CreateLogger<HttpServer>());//, logger: consoleLogger
